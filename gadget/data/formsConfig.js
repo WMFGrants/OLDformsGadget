@@ -20,8 +20,8 @@
   							'error-messageLength': 'Max length reached',
   							'error-notFilled': 'Mandatory field',
   							'add-to': 'infobox',
-  							'infobox-param':'title',
-  							'validate': 'exists'
+  							'infobox-param':'project',
+  							'validate': 'doesNotExists'
   						},
   					'projectSummaryTextbox': {
   							'type': 'largeTextBox',
