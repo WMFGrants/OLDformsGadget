@@ -1,20 +1,18 @@
-window.onload = function(){
-/*
- * Elements being supported
- * Small textbox
- * Large textbox
- * Checkbox list
- * Radio button list
- * Stepper list
- * Image/s
+/*  _____________________________________________________________________________
+ * |                                                                             |
+ * |                    === WARNING: GADGET FILE ===                      |
+ * |                  Changes to this page affect many users.                    |
+ * | Please discuss changes on the talk page or on [[MediaWiki_talk:Gadgets-definition]] before editing. |
+ * |_____________________________________________________________________________|
+ *
+ * "Forms" feature, to be used by the Wikimedia Foundation's Grants Programme, 
  */
-
 var formsGadget = {
 	'that' : this,
 	'createDialog' : function(){
 		$('<div id="formsDialog"></div>').dialog({
 							dialogClass: 'formsGadget',
-							autoOpen: true,
+							autoOpen: false,
 							title: 'Form',
 							width: '495px',
 							modal: true,
@@ -22,7 +20,7 @@ var formsGadget = {
 							resizable: false,
 							draggable: false,
 						});	
-		},
+	},
 	'dialog' : null,
 	'openDialog' : function () {
 		if (this.dialog === null){
@@ -32,7 +30,65 @@ var formsGadget = {
 			this.dialog.dialog('open');
 		}
 	},
+	'utilities' : {
+		'configPath' : 'Meta:AddMe/Config',
+		'grantType' : function(config){
+			var grant = mw.config.get('wgTitle').split('/')[0].replace(/ /g,'_');
+			if (grant in config){
+				return config[grant];
+			}
+			else{
+				return config['default'];
+			}
+		},
+		/*
+	 	 * To detect the users default language
+		 */
+		'userLanguage' : function(){
+			return mw.config.get('wgUserLanguage');
+		},
+		/*
+		 * To detect the language of the page
+		 */
+		'contentLanguage' : function(){
+			return mw.config.get('wgContentLanguage');
+		},
+		/*
+		 * To remove extra spaces & cleanup the comment string
+		 */
+		'cleanupText' : function(text){
+				text = $.trim(text)+' ';
+				var indexOf = text.indexOf('~~~~');
+				if ( indexOf == -1 ){
+					return text;
+				}
+				else{
+					return text.slice(0,indexOf)+text.slice(indexOf+4);
+				}	
+		},
+		/*
+		 * The config files which can be translated with the help of the 
+		 * translation tool generates the dict with the values having a 
+		 * lot of space in the key value pairs. This function strips the 
+		 * whitespace.
+		 */
+		'stripWhiteSpace' : function(dict){
+			for (key in dict){
+				dict[key] = typeof(dict[key]) == 'object' ? that.stripWhiteSpace(dict[key]) : $.trim(dict[key]);
+			}
+			return dict;
+		}
+	},
 	'formElement' : {
+		/*
+		 * Elements being supported
+		 * Small textbox
+		 * Large textbox
+		 * Checkbox list
+		 * Radio button list
+		 * Stepper list
+		 * Image/s
+		 */
 		'found' : false,
 		'defaultTextBoxConfig': {
 			'type': 'smallTextBox',
@@ -362,15 +418,40 @@ var formsGadget = {
 	} 
 };
 
-  	/*
-  	 * Validate all mandatory fields are
-  	 * filled.
-  	 */
-formsGadget.createDialog();
-formsGadget.createForm(form['default']);
-
-//$('#formData').text(JSON.stringify(form,undefined,2)).width(400).height(400).css('overflow','scroll');
-};
+mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.chosen'], function() {	
+	$(function() {
+		(function(){
+			var namespace = mw.config.get('wgCanonicalNamespace');
+			if(mw.config.get('wgPageContentLanguage') == 'en'){
+				var api = new mw.Api();
+				var utility = formsGadget.utilities;
+				var configFullPath = utility.configPath+'/'+utility.contentLanguage();
+				api.get({'action':'query','titles':interfaceMessagesFullPath+'|'+configFullPath,'format':'json'}).then(function(data){	
+						for(id in data.query.pages){
+							if (data.query.pages[id].title == util.configPath && id == -1){
+								configFullPath = util.configPath+'/en';
+							}
+						}
+						var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
+						//Get the config for the detected language
+				$.when(jQuery.getScript(configUrl)).then(function(){
+					var config = utility.stripWhiteSpace(utility.grantType(formsGadgetConfig));
+					formsGadget.openDialog();
+					formsGadget.createForm(config);
+					$('.wp-formsGadget-button').click(function(e){
+													e.preventDefault();
+													formsGadget.openDialog();
+												});
+				});
+				});
+			}
+			else{
+					$('.wp-formsGadget-button').hide();
+				}
+		});
+	});
+});
+			
 /*
  * Notes
  * Default values for all textboxes/ input elements
