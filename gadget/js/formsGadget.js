@@ -1,16 +1,19 @@
-/*  _____________________________________________________________________________
- * |                                                                             |
- * |                    === WARNING: GADGET FILE ===                      |
- * |                  Changes to this page affect many users.                    |
- * | Please discuss changes on the talk page or on [[MediaWiki_talk:Gadgets-definition]] before editing. |
- * |_____________________________________________________________________________|
+/*  ______________________________________________________________________________________
+ * |                                                                                     |
+ * |                    === WARNING: GADGET FILE ===                                     |
+ * |                  Changes to this page affect many users.                            |
+ * | Please discuss changes on the talk page or on [[MediaWiki_talk:Gadgets-definition]] |
+ * |	 before editing.                                                                 |
+ * |_____________________________________________________________________________________|
  *
- * "Forms" feature, to be used by the Wikimedia Foundation's Grants Programme, 
+ * "Forms" feature, to be used by the Wikimedia Foundation's Grants Programme
  */
+//<nowiki>
+importStylesheet('User:Jeph_paul/formsGadget.css');
 var formsGadget = {
 	'that' : this,
 	'createDialog' : function(){
-		$('<div id="formsDialog"></div>').dialog({
+		this.dialog = $('<div id="formsDialog"></div>').dialog({
 							dialogClass: 'formsGadget',
 							autoOpen: false,
 							title: 'Form',
@@ -31,7 +34,7 @@ var formsGadget = {
 		}
 	},
 	'utilities' : {
-		'configPath' : 'Meta:AddMe/Config',
+		'configPath' : 'User:Jeph_paul/formsGadgetConfig',
 		'grantType' : function(config){
 			var grant = mw.config.get('wgTitle').split('/')[0].replace(/ /g,'_');
 			if (grant in config){
@@ -58,7 +61,7 @@ var formsGadget = {
 		 */
 		'cleanupText' : function(text){
 				text = $.trim(text)+' ';
-				var indexOf = text.indexOf('~~~~');
+				var indexOf = text.indexOf('[[User:Jeph paul|Jeph paul]] ([[User talk:Jeph paul|talk]]) 12:12, 29 June 2014 (UTC)');
 				if ( indexOf == -1 ){
 					return text;
 				}
@@ -74,7 +77,7 @@ var formsGadget = {
 		 */
 		'stripWhiteSpace' : function(dict){
 			for (key in dict){
-				dict[key] = typeof(dict[key]) == 'object' ? that.stripWhiteSpace(dict[key]) : $.trim(dict[key]);
+				dict[key] = typeof(dict[key]) == 'object' ? this.stripWhiteSpace(dict[key]) : $.trim(dict[key]);
 			}
 			return dict;
 		}
@@ -259,9 +262,10 @@ var formsGadget = {
 			return div;
 		},
 		'button': function(type,text){
-			var a = document.createElement('a');
+			var a = document.createElement('input');
+			a.type='submit';
 			a.setAttribute('elemType','button');
-			a.href = '#';
+			//a.href = '#';
 			if(type == 'cancel'){
 				a.className = 'mw-ui-button cancel mw-ui-quiet';
 			}
@@ -271,7 +275,7 @@ var formsGadget = {
 			else {
 				a.className = 'mw-ui-button mw-ui-constructive';
 			}
-			a.innerText = text;
+			a.value = text;
 			$(a).on('disableButtons',function(){
 				$(this).attr('disabled',true);
 			});
@@ -283,7 +287,7 @@ var formsGadget = {
 		'cancelButton': function(dict){
 			var button = this.button('cancel',dict['title']);
 			button.onclick = function(){
-				dialog.dialog('close');
+				formsGadget.dialog.dialog('close');
 			};
 			return button;
 		},
@@ -344,7 +348,7 @@ var formsGadget = {
 			var probox = '';
 			var page = '';
 			var api = new mw.Api();
-			var pageTitle = $('#formsDialog [infobox-param="project"]').val();
+			var pageTitle = $('#formsDialog [data-add-to-attribute="project"]').val();
 			
 			$('#formsDialog [data-add-to]').each(function(index,elem){
 				var elem = $(elem);
@@ -426,12 +430,12 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 				var api = new mw.Api();
 				var utility = formsGadget.utilities;
 				var configFullPath = utility.configPath+'/'+utility.contentLanguage();
-				api.get({'action':'query','titles':interfaceMessagesFullPath+'|'+configFullPath,'format':'json'}).then(function(data){	
-						for(id in data.query.pages){
-							if (data.query.pages[id].title == util.configPath && id == -1){
+				api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
+					for (id in data.query.page){
+							if (id == -1){
 								configFullPath = util.configPath+'/en';
 							}
-						}
+					}
 						var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
 						//Get the config for the detected language
 				$.when(jQuery.getScript(configUrl)).then(function(){
@@ -448,7 +452,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 			else{
 					$('.wp-formsGadget-button').hide();
 				}
-		});
+		})();
 	});
 });
 			
@@ -457,3 +461,4 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
  * Default values for all textboxes/ input elements
  * 
  */
+//</nowiki>
