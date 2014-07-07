@@ -9,6 +9,7 @@
   					'page-template': '',
   					'infobox': '',
   					'talkpage-template': '',
+  					'page-home': 'Grants:IEG/Test/'
   			},
   			'step-1':{
   					'projectNameTextbox': {
@@ -21,7 +22,8 @@
   							'error-notFilled': 'Mandatory field',
   							'add-to': 'infobox',
   							'infobox-param':'project',
-  							'validate': 'doesNotExists'
+  							'validate': 'doesNotExists',
+  							'page-title':true
   						},
   					'projectSummaryTextbox': {
   							'type': 'largeTextBox',

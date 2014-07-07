@@ -105,10 +105,11 @@ var formsGadget = {
 		'checkTitle' : function(string,exists){
 			var that = this;
 			var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
+			var title = this.formDict.config['page-home'] + string;
 			var searchDict = {
 					'action':'query',
 					'format':'json',
-					'titles':string,
+					'titles':title,
 					'prop':'imageinfo'
 				};
 				return $.getJSON(apiUrl,searchDict,function(data){
@@ -121,7 +122,7 @@ var formsGadget = {
 				});
 		},
 		'inputList': function(type,list,title,dict){
-			var div = document.createElement('div');
+		 	var div = document.createElement('div');
 			div = this.addText(div,title,'title');
 			for (elem in list){
 				var label = document.createElement('div');
@@ -129,12 +130,15 @@ var formsGadget = {
 				checkbox.type = type;
 				checkbox.value = type == 'number' ? 0 : list[elem];
 				checkbox.setAttribute('data-add-to',dict['add-to']);
+				checkbox.className = 'inputListItem';
 				var conditionalAttr = dict['add-to'] == 'infobox' ? dict['infobox-param'] : dict['section-header'];
 				//checkbox.setAttribute('data-add-to-attribute',conditionalAttr);
 				checkbox.setAttribute('data-add-to-attribute',list[elem]);
 				var descriptionText = list[elem].replace(/_/g,' ');
 				descriptionText = descriptionText.slice(0,1).toUpperCase() + descriptionText.slice(1);
-				var description = document.createTextNode(descriptionText);
+				var description = document.createElement('span');
+				description.className = 'inputListItemDescription';
+				description.textContent = descriptionText;
 				label.appendChild(description);
 				label.appendChild(checkbox);			
 				div.appendChild(label);
@@ -153,7 +157,12 @@ var formsGadget = {
 	 		var className  = type == 'small'? 'smallTextBox': 'largeTextBox';
 	 		var div = document.createElement('div');
 	 		div = this.addText(div,config['title'],'title');
-	 		var input = document.createElement('input');
+	 		if (type == 'large'){
+	 			var input = document.createElement('textarea');
+	 		}
+	 		else{
+	 			var input = document.createElement('input');
+	 		}
 	 		//var api = new mw.Api();
 	 		input.setAttribute('type','textbox');
 	 		input.setAttribute('class',className);
@@ -195,10 +204,11 @@ var formsGadget = {
 	 					} 
 	 				});
 	 			}
+	 			//Cleanup & trigger event for limit reached
 	 			$(this).removeClass('mandatoryClass');
 	 			if ($(this).val().length > config['characterLength']){
-	 				$('#formsDialog [elemType="button"]').trigger('disableButtons');
-	 				$(this).val() = $(this).substring(0,config['characterLength']);
+	 				//$('#formsDialog [elemType="button"]').trigger('disableButtons');
+	 				$(this).val($(this).val().substring(0,config['characterLength']));
 	 			}
 	 			else{
 	 				var flag = 0;
@@ -209,12 +219,12 @@ var formsGadget = {
 	 					}
 	 				});
 	 				if(!flag){
-	 					$('#formsDialog [elemType="button"]').trigger('enableButtons');
+	 					//$('#formsDialog [elemType="button"]').trigger('enableButtons');
 	 				}
 	 			}
 	 		});
 	 		div.appendChild(input);
-	 		div.appendChild(this.addText(div,config['error-messageLength'],'error'));
+	 		this.addText(div,config['error-messageLength'],'error');
 			return div;
 		},
 		'smallTextBox': function (dict,callback,element) {
@@ -237,7 +247,8 @@ var formsGadget = {
 				textHolder.className = '';
 				textHolder.style['display'] = 'none';
 			}
-			return container.appendChild(textHolder);
+			container.appendChild(textHolder);
+			return container;
 		},
 		'stepperList': function (dict) {
 			var list = dict['roles'].split(',');
@@ -257,7 +268,7 @@ var formsGadget = {
 			},img);
 			var description = document.createTextNode(text);
 			div.appendChild(img);
-			div.appendChild(description);
+			//div.appendChild(description);
 			div.appendChild(textbox);
 			return div;
 		},
@@ -330,6 +341,7 @@ var formsGadget = {
 					elem.addClass('mandatoryInput');
 				}
 			});
+			//Add mandatory filed Event & styling
 			if(firstElem){
 				$('#formsDialog [step]').hide();
 				while(true){
@@ -345,10 +357,10 @@ var formsGadget = {
 			}
 		},
 		'createWikiPage' :  function(){
-			var probox = '';
+			var infobox = '';
 			var page = '';
 			var api = new mw.Api();
-			var pageTitle = $('#formsDialog [data-add-to-attribute="project"]').val();
+			var pageTitle = $('#formsDialog [page-title]').val();
 			
 			$('#formsDialog [data-add-to]').each(function(index,elem){
 				var elem = $(elem);
@@ -357,45 +369,58 @@ var formsGadget = {
 					page = page + section;
 				}
 				else{
-					var number = parseInt(elem.val()) ? parseInt(elem.val()) : null;
-					if (number){
-						for (var i =0;i<number; i++){
-							probox = probox + '|'+ elem.attr('data-add-to-attribute') + '=\n';
+					//Cleanup & Simplify
+					var value = parseInt(elem.val()) || parseInt(elem.val()) == 0 ? parseInt(elem.val()) : null;
+					if (typeof(value) == 'number'){
+						for (var i=0;i<value; i++){
+							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + i + '=\n';
 						}	
 					}else{
-						probox = probox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
+						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
 					}
 				}
 			});
 			/*
 			*
-			* Probox entries
+			* infobox entries
 			*/
-			probox = probox + '| more_participants = Yes \n';
-			probox = probox + '| status =  withdrawn  \n';
-			//probox = probox.join('');
-			probox = '{{Probox/Idealab \n' + probox + '}} \n';
-			page = probox + page;
+			infobox = infobox + '| more_participants = YES \n';
+			infobox = infobox + '| status =  withdrawn  \n';
+			//infobox = infobox.join('');
+			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
+			infobox = '{{' + probox + '\n' + infobox + '}} \n';
+			page = infobox + page;
 			
 			/*
 			 * Creating a new page
 			 *
 			 */
+			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
 			api.post({
 						'action': 'edit',
-						'title': 'Grants:IEG/Test/' + pageTitle,
+						//Cleanup
+						'title': title,
 						'summary': 'Creating a test grant',
 						'text': page,
 						'watchlist':'watch',
 						token: mw.user.tokens.get('editToken')
 					}).then(function () {
 						console.log('Successfully created new page');
+						//Cleanup
+						formsGadget.dialog.dialog('close');
+						window.location.href = location.origin + '/wiki/' + title;
 					});
 			
 			console.log(page);
 		}
 	},
 	'createForm' : function(formDict){
+		//cleanup fixing the fallbacks
+		if( !formDict.config['page-home'].match(/\/$/) ){
+			formDict.config['page-home'] = formDict.config['page-home'] + '/';
+		} 
+		this.formDict = formDict;
+		this.formElement.formDict = formDict;
 		var dialogInternal = document.createElement('div');
 		var counter = 0;
 		for (step in formDict){
@@ -462,3 +487,11 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
  * 
  */
 //</nowiki>
+/*
+ * Todo
+ * 1.) Default value for image 
+ * 2.) Styling for Mandatory field, Limit reached, Exists/ Does not exist
+ * 3.) Write test cases
+ * 4.) Dropdowns
+ * 5.) Cleanup the dialog when closed & opened.
+ */
