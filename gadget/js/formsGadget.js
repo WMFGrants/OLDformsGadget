@@ -61,7 +61,7 @@ var formsGadget = {
 		 */
 		'cleanupText' : function(text){
 				text = $.trim(text)+' ';
-				var indexOf = text.indexOf('[[User:Jeph paul|Jeph paul]] ([[User talk:Jeph paul|talk]]) 12:12, 29 June 2014 (UTC)');
+				var indexOf = text.indexOf('~~~~');
 				if ( indexOf == -1 ){
 					return text;
 				}
@@ -260,6 +260,8 @@ var formsGadget = {
 			dict['add-to'] = 'infobox';
 	  		dict['infobox-param'] = 'image';
 	  		dict['validate'] = 'exists';
+	  		//cleanup
+	  		dict['placeholder'] = 'placeholder' in dict ? dict['placeholder'] : 'File:Test.png';
 			var div = document.createElement('div');
 			var img = document.createElement('img');
 			img.src = url;
