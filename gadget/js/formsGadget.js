@@ -249,7 +249,7 @@ var formsGadget = {
 			return this.textBox(dict,'large',callback,element);
 		},
 		'checkboxList': function (dict) {
-			var list = dict['roles'];
+			var list = dict['choiceList'];
 			var hidden = dict['hidden'];
 			this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
 			return this.inputList('checkbox',list,dict['title'],dict);
@@ -268,7 +268,7 @@ var formsGadget = {
 			return container;
 		},
 		'stepperList': function (dict) {
-			var list = dict['roles'];
+			var list = dict['choiceList'];
 			this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
 			return this.inputList('number',list,dict['title'],dict);
 		},
