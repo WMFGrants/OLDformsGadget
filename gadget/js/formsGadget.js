@@ -132,7 +132,7 @@ var formsGadget = {
 				var label = document.createElement('div');
 				var checkbox = document.createElement('input');
 				var key = list[elem]['key'];
-				var value = list[elem][value];
+				var value = list[elem]['value'];
 				checkbox.type = type;
 				
 				checkbox.value = value;
