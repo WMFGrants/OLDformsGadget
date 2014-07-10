@@ -11,7 +11,8 @@
   					'page-template': '',
   					'infobox': 'Probox/IEG',
   					'talkpage-template': '',
-                    'page-home':  'Grants:IEG/Test/'
+                    'page-home':  'Grants:IEG/Test/',
+                    'dialog-title': 'Create an Idea'
   			},
   			'step-1':{
   					'projectNameTextbox': {
@@ -73,9 +74,12 @@ Enter the project title</translate>",
   					'projectImage':{
   							'type': 'image',
   							'title': 'Select an image for your project',
+  							'text-1': 'You can chnage it later',
+  							'textbox-title': 'Or enter an Image file name',
 			'url':"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Persian_Cat_%28kitten%29.jpg/205px-Persian_Cat_%28kitten%29.jpg",
 							'add-to': 'infobox',
 							'infobox-param': 'image',
+							'placeholder': 'Click here to add an image',
 							'validate': true
   						},
   					'cancelButton':{

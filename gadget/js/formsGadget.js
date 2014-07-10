@@ -13,10 +13,11 @@ importStylesheet('User:Jeph_paul/formsGadget.css');
 var formsGadget = {
 	'that' : this,
 	'createDialog' : function(){
+		var that = this;
 		this.dialog = $('<div id="formsDialog"></div>').dialog({
 							dialogClass: 'formsGadget',
 							autoOpen: false,
-							title: 'Form',
+							title: that.formDict.config['dialog-title'],
 							width: '495px',
 							modal: true,
 							closeOnEscape: true,
@@ -196,7 +197,6 @@ var formsGadget = {
 		 										callback(element,'https:'+src);
 		 									}
 		 									});
-		 						
 		 					}
 	 					}
 	 					else{
@@ -263,8 +263,15 @@ var formsGadget = {
 	  		//cleanup
 	  		dict['placeholder'] = 'placeholder' in dict ? dict['placeholder'] : 'File:Test.png';
 			var div = document.createElement('div');
+			this.addText(div,dict[title],'title');
+			for (key in dict){
+				if(key.indexOf('text') != -1){
+					this.addText(div,dict[key],'text');
+				}
+			}
 			var img = document.createElement('img');
 			img.src = url;
+			dict['title'] = dict['textbox-title'];
 			var textbox = this.smallTextBox(dict,function(elem,src){
 				img.src = src;
 			},img);
@@ -383,7 +390,6 @@ var formsGadget = {
 				}
 			});
 			/*
-			*
 			* infobox entries
 			*/
 			infobox = infobox + '| more_participants = YES \n';
@@ -412,7 +418,6 @@ var formsGadget = {
 						formsGadget.dialog.dialog('close');
 						window.location.href = location.origin + '/wiki/' + title;
 					});
-			
 			console.log(page);
 		}
 	},
