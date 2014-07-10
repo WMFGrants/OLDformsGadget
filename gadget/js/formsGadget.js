@@ -398,13 +398,19 @@ var formsGadget = {
 				}
 				else{
 					//Cleanup & Simplify
-					var value = parseInt(elem.val()) || parseInt(elem.val()) == 0 ? parseInt(elem.val()) : null;
-					if (typeof(value) == 'number'){
-						for (var i=0;i<value; i++){
+					//var value = parseInt(elem.val()) || parseInt(elem.val()) == 0 ? parseInt(elem.val()) : null;
+					if (elem.attr('type') == 'number'){
+						for (var i=0;i<elem.val(); i++){
 							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + i + '=\n';
 						}	
-					}else if(elem.attr('type') == 'checkbox' && elem.attr('checked')){
+					}
+					else if(elem.attr('type') == 'checkbox'){
+						if (elem.attr('checked')){
 							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
+						}
+						else{
+							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=\n';
+						}
 					}
 					else{
 						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
