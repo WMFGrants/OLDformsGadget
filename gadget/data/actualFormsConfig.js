@@ -43,7 +43,9 @@
   							'add-to': 'section',
   							'section-header': 'Methods',
   							'visibility': 'hidden',
-  							'value': 'These are the methods we will use.'
+  							'value': 'These are the methods we will use.',
+  							'parent': 'projectProblemSolvedTextbox'
+  							
   						},
   					'projectProblemSolvedTextbox': {
   							'type': 'largeTextBox',

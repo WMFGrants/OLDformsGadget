@@ -474,7 +474,67 @@ var formsGadget = {
 		}
 		$('#formsDialog').append(dialogInternal);
 		return true;
-	} 
+	},
+	'tree' : function(){
+		var rootList = {};
+		var nodeList = {};
+		this.page = '';
+		this.roots = rootList;
+		var node = function(parent,child,id){
+			this.parent = parent;
+			this.id = id;
+			this.child = child;
+		};
+		var getNode = function(id){
+			if (id in nodeList){
+				return nodeList[id];
+			}
+			else{
+				var Node = new node(null,null,id);
+				nodeList[id] = Node;
+				rootList[id] = Node;
+				return Node;
+			}
+		};
+		this.addLink = function(startId,endId){
+			if (endId){
+				var startNode = getNode(startId);
+				var endNode = getNode(endId);
+				endNode.parent = startNode;
+				if (startNode.child){
+					startNode.child.push(endNode);
+				}
+				else{
+					startNode.child = [endNode];
+				}
+				delete rootList[endNode.id]; 
+			}
+			else{
+				getNode(startId);
+			}
+		};
+		var sectionLevel = function(indent){
+			var string = '';
+			for (var i=0;i<indent;i++){
+				string = string + '=';
+			}
+			return string;
+		};
+		this.traverse = function(rootList,level,callback){
+			if(!rootList){
+				return;
+			}
+			level++;
+			var wikiSection = sectionLevel(level);
+			for (elem in rootList){
+				var root = rootList[elem];
+				var line = wikiSection + root.id + wikiSection + '\n';
+				this.page = this.page + line;
+				root = root.child;
+				this.traverse(root,level);
+			}
+		};
+	}
 };
 
 mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.chosen'], function() {	

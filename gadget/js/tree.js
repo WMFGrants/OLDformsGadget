@@ -73,28 +73,17 @@ window.onload = function(){
 			return string;
 		};
 		this.traverse = function(rootList,level,callback){
-					
 			if(!rootList){
-				//return page;
 				return;
 			}
-			//console.log(level);
 			level++;
 			var wikiSection = sectionLevel(level);
 			for (elem in rootList){
 				var root = rootList[elem];
 				var line = wikiSection + root.id + wikiSection + '\n';
-				//console.log(line);
 				this.page = this.page + line;
 				root = root.child;
-				//console.log('+');
-				//if (root){
-					this.traverse(root,level);
-				//}
-				//else{
-				//	return page;
-				//}
-				//console.log('*');
+				this.traverse(root,level);
 			}
 		};
 	};
