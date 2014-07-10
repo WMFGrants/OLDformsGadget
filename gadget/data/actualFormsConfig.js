@@ -1,28 +1,21 @@
-/*
- * Mirros the dict on meta
- */
+/*  Example Dict  */
   var formsGadgetConfig = {
   		'default':{
   			'config': {
-  					'post-edit': 'Thank You for commenting',
+  					'post-edit': 'Thank you for creating your idea! Visit x page for some tips about how to take your idea to the next level.',
   					'new-page': true,
   					'namespace': 'Grants',
-  					'portal-page': '',
+  					'portal-page': 'IdeaLab',
   					'page-template': '',
-  					'infobox': 'Probox/IEG',
+  					'infobox': 'Probox/Idealab',
   					'talkpage-template': '',
-                    'page-home':  'Grants:IEG/Test/',
-                    'dialog-title': 'Create an Idea'
+                    'page-home': 'Grants:IEG/Test/'
   			},
   			'step-1':{
   					'projectNameTextbox': {
   							'type': 'smallTextBox',
-  							'placeholder': "<translate>
-                                                                        <!--T:1-->
-Title</translate>",
-  							'title': "<translate>
-                                                                 <!--T:2-->
-Enter the project title</translate>",
+  							'placeholder': 'Short title',
+  							'title': 'What should we call your idea?',
   							'characterLength':100,
   							'mandatory':true,
   							'error-messageLength': 'Max length reached',
@@ -34,25 +27,43 @@ Enter the project title</translate>",
   						},
   					'projectSummaryTextbox': {
   							'type': 'largeTextBox',
-  							'placeholder': 'Click here to add summary',
-  							'title': 'Tell us about your idea in a sentence or two',
-  							'characterLength':400,
-  							'section': 'Summary',
+  							'placeholder': 'Add your summary here',
+  							'title': 'Briefly summarize your idea in a sentence',
+  							'characterLength':200,
   							'mandatory': true,
-  							'error-messageLength': 'Max length reached',
-  							'error-notFilled': 'Mandatory field',
+  							'error-messageLength': "You've reached the word limit",
+  							'error-notFilled': 'Please fill out this mandatory field',
+  							'add-to': 'infobox',
+  							'infobox-param':'summary',
+  						},
+                    'projectMethodsTextbox': {
+  							'type': 'largeTextBox',
+  							'placeholder': 'Click here to add summary',
+  							'title': 'Tell us about your methods in a line or two',
   							'add-to': 'section',
-  							'section-header': 'Summary'
+  							'section-header': 'Methods',
+  							'visibility': 'hidden',
+  							'value': 'These are the methods we will use.'
   						},
   					'projectProblemSolvedTextbox': {
   							'type': 'largeTextBox',
-  							'placeholder': 'Click here to add summary',
-  							'title': 'What are you trying to solve?',
-  							'characterLength':400,
-  							'section': 'Problem Solved',
+  							'placeholder': 'Click here to explain the issue you want to address with this idea',
+  							'title': "What is the problem you're trying to solve?",
+  							'characterLength':1000,
+  							'section': "What is the problem you're trying to solve?",
   							'mandatory': false,
   							'add-to': 'section',
-  							'section-header': 'Problems Solved'
+  							'section-header': "What is the problem you're trying to solve?"
+  						},
+  					'projectSolutionTextbox': {
+  							'type': 'largeTextBox',
+  							'placeholder': 'Click here to explain how your idea might solve this problem ',
+  							'title': 'What is your solution?',
+  							'characterLength':1000,
+  							'section': 'What is your solution?',
+  							'mandatory': false,
+  							'add-to': 'section',
+  							'section-header': 'What is your solution?'
   						},
   					'cancelButton':{
   							'type': 'cancelButton',
@@ -65,21 +76,57 @@ Enter the project title</translate>",
   				},
   				'step-2':{
   					'roleSelectionList':{
-  							'title': 'Would you like to invite others?',
+  							'title': 'Does this idea need any specific kinds of participants to help turn it into action?',
   							'type': 'stepperList',
-  							'roles': 'community_organizer,volunteer,designer,developer,project_manager,researcher',
+  							'roles': [
+  									{
+  										'key': 'community_organizer',
+  										'value': 0
+  									},
+  									{
+  										'key': 'designer',
+  										'value': 0
+  									},
+  									{
+  										'key': 'community_organizer',
+  										'value': 0
+  									},
+  									{
+  										'key': 'developer',
+  										'value': 0
+  									},
+  									{
+  										'key': 'project_manager',
+  										'value': 0
+  									},
+  									{
+  										'key': 'researcher',
+  										'value': 0
+  									},
+  							],
+  							'hidden': [
+  									{
+  										'key': 'timestamp',
+  										'value': '~~~~'
+  									},
+  									{
+  										'key': 'status',
+  										'value': 'withdrawn'
+  									},
+  									{
+  										'key': 'more_participants',
+  										'value': 'YES'
+  									}
+  							],
   							'add-to': 'infobox',
-  							'infobox-param': 'list'
   						},
   					'projectImage':{
   							'type': 'image',
   							'title': 'Select an image for your project',
-  							'text-1': 'You can chnage it later',
-  							'textbox-title': 'Or enter an Image file name',
-			'url':"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Persian_Cat_%28kitten%29.jpg/205px-Persian_Cat_%28kitten%29.jpg",
+  							'textbox-title': 'Enter a file name',
+							'url':"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Persian_Cat_%28kitten%29.jpg/205px-Persian_Cat_%28kitten%29.jpg",
 							'add-to': 'infobox',
 							'infobox-param': 'image',
-							'placeholder': 'Click here to add an image',
 							'validate': true
   						},
   					'cancelButton':{
@@ -103,7 +150,7 @@ Enter the project title</translate>",
   					'namespace': 'Grants',
   					'portal-page': '',
   					'page-template': '',
-  					'infobox': 'Probox/Patterns',
+  					'infobox': '',
   					'talkpage-template': '',
                     'page-home':  'Grants:Learning_patterns/test/'
   			},
@@ -119,7 +166,7 @@ Enter the project title</translate>",
   							'add-to': 'infobox',
   							'infobox-param':'pattern',
   							'validate': 'doesNotExists',
-                            'page-title':true
+                                                        'page-title':true
   						},
   					'projectSummaryTextbox': {
   							'type': 'largeTextBox',
@@ -163,7 +210,7 @@ Enter the project title</translate>",
   					'projectImage':{
   							'type': 'image',
   							'title': 'Select an image for your project',
-			'url':"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Persian_Cat_%28kitten%29.jpg/205px-Persian_Cat_%28kitten%29.jpg",
+							'url':"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Persian_Cat_%28kitten%29.jpg/205px-Persian_Cat_%28kitten%29.jpg",
 							'add-to': 'infobox',
 							'infobox-param': 'image',
 							'validate': true
@@ -189,7 +236,7 @@ Enter the project title</translate>",
   					'namespace': 'Grants',
   					'portal-page': '',
   					'page-template': '',
-  					'infobox': 'Probox/TPS',
+  					'infobox': '',
   					'talkpage-template': '',
                     'page-home':  'Grants:TPS/Test/'
   			},
@@ -205,7 +252,7 @@ Enter the project title</translate>",
   							'add-to': 'infobox',
   							'infobox-param':'event',
   							'validate': 'doesNotExists',
-                            'page-title': true
+                                                        'page-title': true
   						},
   					'requesterNameTextbox': {
   							'type': 'smallTextBox',

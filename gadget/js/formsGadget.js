@@ -93,6 +93,7 @@ var formsGadget = {
 		 * Stepper list
 		 * Image/s
 		 */
+		'hiddenInfoboxFields' : [],
 		'found' : false,
 		'defaultTextBoxConfig': {
 			'type': 'smallTextBox',
@@ -101,7 +102,9 @@ var formsGadget = {
 			'characterLength':100,
 			'mandatory':false,
 			'error-messageLength': 'Max length reached',
-			'error-notFilled': 'Mandatory field'
+			'error-notFilled': 'Mandatory field',
+			'value': '',
+			'parent': ''
 		},
 		'checkTitle' : function(string,exists){
 			var that = this;
@@ -128,14 +131,16 @@ var formsGadget = {
 			for (elem in list){
 				var label = document.createElement('div');
 				var checkbox = document.createElement('input');
+				var key = list[elem]['key'];
+				var value = list[elem][value];
 				checkbox.type = type;
-				checkbox.value = type == 'number' ? 0 : list[elem];
+				
+				checkbox.value = value;
 				checkbox.setAttribute('data-add-to',dict['add-to']);
 				checkbox.className = 'inputListItem';
-				var conditionalAttr = dict['add-to'] == 'infobox' ? dict['infobox-param'] : dict['section-header'];
-				//checkbox.setAttribute('data-add-to-attribute',conditionalAttr);
-				checkbox.setAttribute('data-add-to-attribute',list[elem]);
-				var descriptionText = list[elem].replace(/_/g,' ');
+				
+				checkbox.setAttribute('data-add-to-attribute',key);
+				var descriptionText = key.replace(/_/g,' ');
 				descriptionText = descriptionText.slice(0,1).toUpperCase() + descriptionText.slice(1);
 				var description = document.createElement('span');
 				description.className = 'inputListItemDescription';
@@ -157,6 +162,7 @@ var formsGadget = {
 			var config = this.createTextBoxConfig(this.defaultTextBoxConfig,dict);
 	 		var className  = type == 'small'? 'smallTextBox': 'largeTextBox';
 	 		var div = document.createElement('div');
+	 		
 	 		div = this.addText(div,config['title'],'title');
 	 		if (type == 'large'){
 	 			var input = document.createElement('textarea');
@@ -165,6 +171,15 @@ var formsGadget = {
 	 			var input = document.createElement('input');
 	 		}
 	 		//var api = new mw.Api();
+	 		//cleanup
+	 		if(dict['visibility'] == 'hidden'){
+	 			div.style['display'] = 'none';
+	 			input.value = dict['value'];
+	 		}
+	 		//Cleanup
+	 		if('page-title' in dict){
+	 			input.setAttribute('page-title',true);
+	 		}
 	 		input.setAttribute('type','textbox');
 	 		input.setAttribute('class',className);
 	 		input.setAttribute('placeholder',config['placeholder']);
@@ -234,7 +249,9 @@ var formsGadget = {
 			return this.textBox(dict,'large',callback,element);
 		},
 		'checkboxList': function (dict) {
-			var list = dict['roles'].split(',');
+			var list = dict['roles'];
+			var hidden = dict['hidden'];
+			this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
 			return this.inputList('checkbox',list,dict['title'],dict);
 		}, 
 		'addText': function(container,text,type){
@@ -251,7 +268,8 @@ var formsGadget = {
 			return container;
 		},
 		'stepperList': function (dict) {
-			var list = dict['roles'].split(',');
+			var list = dict['roles'];
+			this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
 			return this.inputList('number',list,dict['title'],dict);
 		},
 		'image': function (dict) {
@@ -263,7 +281,7 @@ var formsGadget = {
 	  		//cleanup
 	  		dict['placeholder'] = 'placeholder' in dict ? dict['placeholder'] : 'File:Test.png';
 			var div = document.createElement('div');
-			this.addText(div,dict[title],'title');
+			this.addText(div,dict['title'],'title');
 			for (key in dict){
 				if(key.indexOf('text') != -1){
 					this.addText(div,dict[key],'text');
@@ -374,6 +392,7 @@ var formsGadget = {
 			$('#formsDialog [data-add-to]').each(function(index,elem){
 				var elem = $(elem);
 				if(elem.attr('data-add-to') == 'section' ){
+					//var value = elem.val() ? elem.val() : '';
 					var section = '==' + elem.attr('data-add-to-attribute') + '==' + '\n' + elem.val() + '\n';
 					page = page + section;
 				}
@@ -384,7 +403,10 @@ var formsGadget = {
 						for (var i=0;i<value; i++){
 							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + i + '=\n';
 						}	
-					}else{
+					}else if(elem.attr('type') == 'checkbox' && elem.attr('checked')){
+							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
+					}
+					else{
 						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
 					}
 				}
@@ -392,8 +414,9 @@ var formsGadget = {
 			/*
 			* infobox entries
 			*/
-			infobox = infobox + '| more_participants = YES \n';
-			infobox = infobox + '| status =  withdrawn  \n';
+			for(entry in this.hiddenInfoboxFields){
+				infobox = infobox + '|' + entry['key'] + '=' + entry['value'] + '\n';
+			}
 			//infobox = infobox.join('');
 			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
 			infobox = '{{' + probox + '\n' + infobox + '}} \n';
@@ -472,6 +495,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 						//Get the config for the detected language
 				$.when(jQuery.getScript(configUrl)).then(function(){
 					var config = utility.stripWhiteSpace(utility.grantType(formsGadgetConfig));
+					formsGadget['formDict'] = config;
 					formsGadget.openDialog();
 					formsGadget.createForm(config);
 					$('.wp-formsGadget-button').click(function(e){
@@ -501,4 +525,5 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
  * 3.) Write test cases
  * 4.) Dropdowns
  * 5.) Cleanup the dialog when closed & opened.
+ * 6.) Fix the nowiki ~~~~ in hidden field timestamp
  */
