@@ -104,7 +104,8 @@ var formsGadget = {
 			'error-messageLength': 'Max length reached',
 			'error-notFilled': 'Mandatory field',
 			'value': '',
-			'parent': ''
+			'parent': '',
+			'id': null
 		},
 		'checkTitle' : function(string,exists){
 			var that = this;
@@ -179,6 +180,9 @@ var formsGadget = {
 	 		//Cleanup
 	 		if('page-title' in dict){
 	 			input.setAttribute('page-title',true);
+	 		}
+	 		if (dict['id']){
+	 			input.id = dict['id'];
 	 		}
 	 		input.setAttribute('type','textbox');
 	 		input.setAttribute('class',className);
@@ -389,12 +393,24 @@ var formsGadget = {
 			var api = new mw.Api();
 			var pageTitle = $('#formsDialog [page-title]').val();
 			
+			var roots = this.wikiSectionTree.roots;
+			
+			for (elem in roots){
+				console.log('---------');
+				this.wikiSectionTree.traverse([roots[elem]],1,function(id){
+					var elem = $('#formsDialog #'+id);
+					value = elem.val() ? elem.val() : '';
+					var heading = elem.attr('data-add-to-attribute');
+					return { 'heading': heading, 'value': value};
+				});
+			}
+			
 			$('#formsDialog [data-add-to]').each(function(index,elem){
 				var elem = $(elem);
 				if(elem.attr('data-add-to') == 'section' ){
 					//var value = elem.val() ? elem.val() : '';
-					var section = '==' + elem.attr('data-add-to-attribute') + '==' + '\n' + elem.val() + '\n';
-					page = page + section;
+					//var section = '==' + elem.attr('data-add-to-attribute') + '==' + '\n' + elem.val() + '\n';
+					//page = page + section;
 				}
 				else{
 					//Cleanup & Simplify
@@ -420,19 +436,22 @@ var formsGadget = {
 			/*
 			* infobox entries
 			*/
-			for(entry in this.hiddenInfoboxFields){
-				infobox = infobox + '|' + entry['key'] + '=' + entry['value'] + '\n';
+			var hiddenFields = this.hiddenInfoboxFields;
+			for(entry in hiddenFields){
+				infobox = infobox + '|' + hiddenFields[entry]['key'] + '=' + hiddenFields[entry]['value'] + '\n';
 			}
 			//infobox = infobox.join('');
 			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
 			infobox = '{{' + probox + '\n' + infobox + '}} \n';
-			page = infobox + page;
+			page = infobox + this.wikiSectionTree.sections;
 			
 			/*
 			 * Creating a new page
 			 *
 			 */
+			
 			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
+			
 			api.post({
 						'action': 'edit',
 						//Cleanup
@@ -447,7 +466,8 @@ var formsGadget = {
 						formsGadget.dialog.dialog('close');
 						window.location.href = location.origin + '/wiki/' + title;
 					});
-			console.log(page);
+			
+			console.log(title,page);
 		}
 	},
 	'createForm' : function(formDict){
@@ -457,6 +477,7 @@ var formsGadget = {
 		} 
 		this.formDict = formDict;
 		this.formElement.formDict = formDict;
+		this.formElement.wikiSectionTree = this.wikiSectionTree;
 		var dialogInternal = document.createElement('div');
 		var counter = 0;
 		for (step in formDict){
@@ -473,7 +494,20 @@ var formsGadget = {
 					elemDict = stepDict[elem];
 					elemDict['elem'] = elem;
 					elemDict['step'] = step;
-					panel.appendChild(this.formElement[elemDict.type](elemDict));			
+					elemDict['id'] = elem;
+					panel.appendChild(this.formElement[elemDict.type](elemDict));
+					//Creating the hierarchial structure of the sections & subsections
+					if (elemDict['add-to'] == 'section' ){
+						var parent = 'parent' in elemDict ? elemDict['parent'] : null;
+						var node = elem;
+						if(parent){
+							this.wikiSectionTree.addLink(parent,node);
+						}
+						else{
+							this.wikiSectionTree.addLink(node);
+						}
+						
+					}  			
 				}
 				dialogInternal.appendChild(panel);
 			}
@@ -481,10 +515,11 @@ var formsGadget = {
 		$('#formsDialog').append(dialogInternal);
 		return true;
 	},
+	//'wikiSectionTree' : new this.tree(),
 	'tree' : function(){
 		var rootList = {};
 		var nodeList = {};
-		this.page = '';
+		this.sections = '';
 		this.roots = rootList;
 		var node = function(parent,child,id){
 			this.parent = parent;
@@ -531,13 +566,14 @@ var formsGadget = {
 				return;
 			}
 			level++;
-			var wikiSection = sectionLevel(level);
+			var wikiSectionHeaderMarkup = sectionLevel(level);
 			for (elem in rootList){
 				var root = rootList[elem];
-				var line = wikiSection + root.id + wikiSection + '\n';
-				this.page = this.page + line;
+				var sectionValues = callback(root.id);
+				var section = wikiSectionHeaderMarkup + sectionValues['heading'] + wikiSectionHeaderMarkup + '\n' + sectionValues['value'] + '\n';
+				this.sections = this.sections + section;
 				root = root.child;
-				this.traverse(root,level);
+				this.traverse(root,level,callback);
 			}
 		};
 	}
@@ -562,6 +598,8 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 				$.when(jQuery.getScript(configUrl)).then(function(){
 					var config = utility.stripWhiteSpace(utility.grantType(formsGadgetConfig));
 					formsGadget['formDict'] = config;
+					//Cleanup
+					formsGadget['wikiSectionTree'] = new formsGadget.tree();
 					formsGadget.openDialog();
 					formsGadget.createForm(config);
 					$('.wp-formsGadget-button').click(function(e){

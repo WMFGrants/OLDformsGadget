@@ -80,7 +80,7 @@
   					'roleSelectionList':{
   							'title': 'Does this idea need any specific kinds of participants to help turn it into action?',
   							'type': 'stepperList',
-  							'roles': [
+  							'choiceList': [
   									{
   										'key': 'community_organizer',
   										'value': 0
