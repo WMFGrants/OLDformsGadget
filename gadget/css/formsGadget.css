@@ -70,3 +70,30 @@ div.grantsHide{
 .formsGadget textarea:-ms-input-placeholder {  
 	font-style: italic;
 }
+
+.formsGadget .entryNotSatisfying{
+	border-left-width: 6px;
+	border-left-color: red;
+}
+
+.formsGadget .entrySatisfying{
+	border-left-width: 6px;
+	border-left-color: #4091ed;
+}
+
+.formsGadget .title{
+	font-weight: bold;
+}
+
+.formsGadget .text{
+	line-height: 10px;
+	margin: 3px 0px;
+}
+
+.formsGadget .inputListItem{
+	width: 50px;
+}
+.formsGadget .inputListItemDescription{
+	/* width: 120px; */
+	display: inline-block;
+}

@@ -101,16 +101,17 @@ var formsGadget = {
 			'title': 'Textbox',
 			'characterLength':100,
 			'mandatory':false,
+			//'validate': '',
 			'error-messageLength': 'Max length reached',
 			'error-notFilled': 'Mandatory field',
 			'value': '',
 			'parent': '',
 			'id': null
 		},
-		'checkTitle' : function(string,exists){
+		'checkTitle' : function(string,exists,titleStem){
 			var that = this;
 			var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
-			var title = this.formDict.config['page-home'] + string;
+			var title = titleStem + string;
 			var searchDict = {
 					'action':'query',
 					'format':'json',
@@ -135,7 +136,10 @@ var formsGadget = {
 				var key = list[elem]['key'];
 				var value = list[elem]['value'];
 				checkbox.type = type;
-				
+				if (type == 'number'){
+					checkbox.min = dict['min'];
+					checkbox.max = dict['max'];
+				}
 				checkbox.value = value;
 				checkbox.setAttribute('data-add-to',dict['add-to']);
 				checkbox.className = 'inputListItem';
@@ -146,8 +150,8 @@ var formsGadget = {
 				var description = document.createElement('span');
 				description.className = 'inputListItemDescription';
 				description.textContent = descriptionText;
-				label.appendChild(description);
-				label.appendChild(checkbox);			
+				label.appendChild(checkbox);
+				label.appendChild(description);		
 				div.appendChild(label);
 			}
 			return div;
@@ -200,8 +204,9 @@ var formsGadget = {
 	 			if( 'validate' in dict && enteredString){
 	 				var exists = dict['validate'] == 'exists' ? 1:0;
 	 				//$(this).addClass(checkTitle(enteredString,exists));
-	 				$.when(that.checkTitle(enteredString,exists)).then(function(){
-	 				$(this).addClass(that.found ? 'stringNotSatisfying' : 'stringSatisfying');
+	 				var titleStem = 'image' in dict ? '' : this.formDict.config['page-home'];
+	 				$.when(that.checkTitle(enteredString,exists,titleStem)).then(function(){
+	 				$(this).addClass(that.found ? 'entryNotSatisfying' : 'entrySatisfying');
 	 					if (that.found){
 	 						$('#formsDialog [elemType="button"]').trigger('enableButtons');
 		 					if(typeof(callback) === 'function' && that.found){
@@ -262,11 +267,11 @@ var formsGadget = {
 			var textHolder = document.createElement('p');
 			textHolder.innerText = text;
 			if (type == 'title'){
-				textHolder.className = '';
+				textHolder.className = 'title';
 			}
 			else{
-				textHolder.className = '';
-				textHolder.style['display'] = 'none';
+				textHolder.className = 'text';
+				//textHolder.style['display'] = 'none';
 			}
 			container.appendChild(textHolder);
 			return container;
@@ -274,6 +279,10 @@ var formsGadget = {
 		'stepperList': function (dict) {
 			var list = dict['choiceList'];
 			this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
+			dict['min'] = 0;
+			if(!('max' in dict)){
+				dict['max'] = 9;
+			}
 			return this.inputList('number',list,dict['title'],dict);
 		},
 		'image': function (dict) {
@@ -294,6 +303,8 @@ var formsGadget = {
 			var img = document.createElement('img');
 			img.src = url;
 			dict['title'] = dict['textbox-title'];
+			//cleanup
+			dict['image'] = true;
 			var textbox = this.smallTextBox(dict,function(elem,src){
 				img.src = src;
 			},img);
