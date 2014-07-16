@@ -81,6 +81,22 @@ var formsGadget = {
 				dict[key] = typeof(dict[key]) == 'object' ? this.stripWhiteSpace(dict[key]) : $.trim(dict[key]);
 			}
 			return dict;
+		},
+		'setPostEditFeedbackCookie' : function(value){
+			$.cookie(value,true);
+		},
+		/*
+		 * This function is used to check if a has been set by the above function 
+		 * to show the speech bubble on page reload
+		 */
+		'checkPostEditFeedbackCookie' : function(value){
+			if($.cookie(value)){
+				$.cookie(value,null);
+				return true;
+			}
+			else{
+				return false;
+			}
 		}
 	},
 	'formElement' : {
@@ -248,7 +264,13 @@ var formsGadget = {
 	 			}
 	 		});
 	 		div.appendChild(input);
-	 		this.addText(div,config['error-messageLength'],'error');
+	 		if('validate' in dict){
+	 			validateIndication = document.createElement('span');
+	 			validateIndication.setAttribute('class','validateIndication');
+	 			div.appendChild(validateIndication);
+	 		}
+	 		//this.addText(div,config['error-messageLength'],'error');
+	 		
 			return div;
 		},
 		'smallTextBox': function (dict,callback,element) {
@@ -475,6 +497,7 @@ var formsGadget = {
 						console.log('Successfully created new page');
 						//Cleanup
 						formsGadget.dialog.dialog('close');
+						formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetPageCreated');
 						window.location.href = location.origin + '/wiki/' + title;
 					});
 			
@@ -598,6 +621,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 				var api = new mw.Api();
 				var utility = formsGadget.utilities;
 				var configFullPath = utility.configPath+'/'+utility.contentLanguage();
+				
 				api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
 					for (id in data.query.page){
 							if (id == -1){
@@ -613,6 +637,10 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 					formsGadget['wikiSectionTree'] = new formsGadget.tree();
 					formsGadget.openDialog();
 					formsGadget.createForm(config);
+					if(formsGadget.checkPostEditFeedbackCookie('formsGadgetPageCreated')){
+						//Show post edi message
+						mw.notify(config['config']['post-edit']);
+					}
 					$('.wp-formsGadget-button').click(function(e){
 													e.preventDefault();
 													formsGadget.openDialog();

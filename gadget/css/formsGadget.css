@@ -97,3 +97,28 @@ div.grantsHide{
 	/* width: 120px; */
 	display: inline-block;
 }
+
+.validateIndication{
+	display: none;
+	width: 10px;
+	height: 10px;
+}
+
+/*Cleanup*/
+.formsGadget .entrySatisfying + span{
+	display: inline-block;
+	background-color: green;
+}
+.formsGadget .entryNotSatisfying + span{
+	display: inline-block;
+	background-color: red;
+}
+
+.formsGadget .entrySatisfying + span:after{
+	content:;
+	position: absolute;
+}
+.formsGadget .entryNotSatisfying + span:after{
+	content:;
+	position: absolute;
+}
