@@ -83,15 +83,15 @@ var formsGadget = {
 			return dict;
 		},
 		'setPostEditFeedbackCookie' : function(value){
-			$.cookie(value,true);
+			$.cookie(value,'true');
 		},
 		/*
 		 * This function is used to check if a has been set by the above function 
 		 * to show the speech bubble on page reload
 		 */
 		'checkPostEditFeedbackCookie' : function(value){
-			if($.cookie(value)){
-				$.cookie(value,null);
+			if($.cookie(value) == 'true'){
+				$.cookie(value,'false');
 				return true;
 			}
 			else{
@@ -111,6 +111,7 @@ var formsGadget = {
 		 */
 		'hiddenInfoboxFields' : [],
 		'found' : false,
+		'timestamp' : 0,
 		'defaultTextBoxConfig': {
 			'type': 'smallTextBox',
 			'placeholder': 'Enter the text',
@@ -134,13 +135,21 @@ var formsGadget = {
 					'titles':title,
 					'prop':'imageinfo'
 				};
+				var timestamp = Date.now();
+				console.log('String before ajax', string);
 				return $.getJSON(apiUrl,searchDict,function(data){
 					var query = data['query'];
 					var pages = data['query']['pages'];
 					var pageId = Object.keys(pages);
 					var pageExists = pageId != -1 ? true : false;
 					var imageExists = pages[pageId]['imagerepository'] ? true : false;
-					that.found = !( ( pageExists ^ imageExists ) ^ exists );
+					if(that.timestamp < timestamp){
+						that.timestamp = timestamp;
+						that.found = !( ( pageExists ^ imageExists ) ^ exists );
+						//temp
+						console.log('String ',string, 'found ',that.found);
+					}
+					
 				});
 		},
 		'inputList': function(type,list,title,dict){
@@ -216,13 +225,15 @@ var formsGadget = {
 	 		/* Word limit */
 	 		$(input).on('change keyup paste',function(){
 	 			/* Checking if link/file/page exists */
+	 			var inputTextBox = this;
 	 			var enteredString = $(this).val();
 	 			if( 'validate' in dict && enteredString){
 	 				var exists = dict['validate'] == 'exists' ? 1:0;
 	 				//$(this).addClass(checkTitle(enteredString,exists));
-	 				var titleStem = 'image' in dict ? '' : this.formDict.config['page-home'];
+	 				var titleStem = 'image' in dict ? '' : that.formDict.config['page-home'];
 	 				$.when(that.checkTitle(enteredString,exists,titleStem)).then(function(){
-	 				$(this).addClass(that.found ? 'entryNotSatisfying' : 'entrySatisfying');
+	 					$(inputTextBox).removeClass();
+	 					$(inputTextBox).addClass(that.found ? 'entrySatisfying' : 'entryNotSatisfying');
 	 					if (that.found){
 	 						$('#formsDialog [elemType="button"]').trigger('enableButtons');
 		 					if(typeof(callback) === 'function' && that.found){
@@ -324,7 +335,7 @@ var formsGadget = {
 			}
 			var img = document.createElement('img');
 			img.src = url;
-			dict['title'] = dict['textbox-title'];
+			dict['title'] = 'imageTitleBox' in dict ? dict['imageTitleBox'] : 'Enter the file name';
 			//cleanup
 			dict['image'] = true;
 			var textbox = this.smallTextBox(dict,function(elem,src){
@@ -628,7 +639,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 								configFullPath = util.configPath+'/en';
 							}
 					}
-						var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
+				var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
 						//Get the config for the detected language
 				$.when(jQuery.getScript(configUrl)).then(function(){
 					var config = utility.stripWhiteSpace(utility.grantType(formsGadgetConfig));
@@ -637,7 +648,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 					formsGadget['wikiSectionTree'] = new formsGadget.tree();
 					formsGadget.openDialog();
 					formsGadget.createForm(config);
-					if(formsGadget.checkPostEditFeedbackCookie('formsGadgetPageCreated')){
+					if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetPageCreated')){
 						//Show post edi message
 						mw.notify(config['config']['post-edit']);
 					}
