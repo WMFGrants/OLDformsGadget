@@ -213,6 +213,7 @@ var formsGadget = {
 	 		if (dict['id']){
 	 			input.id = dict['id'];
 	 		}
+	 		
 	 		input.setAttribute('type','textbox');
 	 		input.setAttribute('class',className);
 	 		input.setAttribute('placeholder',config['placeholder']);
@@ -227,33 +228,41 @@ var formsGadget = {
 	 			/* Checking if link/file/page exists */
 	 			var inputTextBox = this;
 	 			var enteredString = $(this).val();
-	 			if( 'validate' in dict && enteredString){
-	 				var exists = dict['validate'] == 'exists' ? 1:0;
-	 				//$(this).addClass(checkTitle(enteredString,exists));
-	 				var titleStem = 'image' in dict ? '' : that.formDict.config['page-home'];
-	 				$.when(that.checkTitle(enteredString,exists,titleStem)).then(function(){
-	 					$(inputTextBox).removeClass();
-	 					$(inputTextBox).addClass(that.found ? 'entrySatisfying' : 'entryNotSatisfying');
-	 					if (that.found){
-	 						$('#formsDialog [elemType="button"]').trigger('enableButtons');
-		 					if(typeof(callback) === 'function' && that.found){
-		 						var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
-		 						$.getJSON(apiUrl,{'action':'parse',
-		 									'format':'json',
-		 									'text':'[['+enteredString+']]'
-		 								},function(data){
-		 									console.log(data['parse']['text']['*']); 
-		 									var src = $('<div>').html(data['parse']['text']['*']).find('img').attr('src');
-		 									if(src){
-		 										callback(element,'https:'+src);
-		 									}
-		 									});
+	 			if(!enteredString && !dict['mandatory']){
+	 				$('#formsDialog [elemType="button"]').trigger('enableButtons');
+	 			}
+	 			else{
+	 				if( 'validate' in dict && enteredString){
+		 				var exists = dict['validate'] == 'exists' ? 1:0;
+		 				//$(this).addClass(checkTitle(enteredString,exists));
+		 				var titleStem = 'image' in dict ? '' : that.formDict.config['page-home'];
+		 				$.when(that.checkTitle(enteredString,exists,titleStem)).then(function(){
+		 					//Cleanpup & remove redundant code
+		 					$(inputTextBox).removeClass('entrySatisfying entryNotSatisfying');
+		 					$(inputTextBox).addClass(that.found ? 'entrySatisfying' : 'entryNotSatisfying');
+		 					$(inputTextBox).parent().removeClass('entrySatisfying entryNotSatisfying');
+		 					$(inputTextBox).parent().addClass(that.found ? 'entrySatisfying' : 'entryNotSatisfying');
+		 					if (that.found){
+		 						$('#formsDialog [elemType="button"]').trigger('enableButtons');
+			 					if(typeof(callback) === 'function' && that.found){
+			 						var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
+			 						$.getJSON(apiUrl,{'action':'parse',
+			 									'format':'json',
+			 									'text':'[['+enteredString+']]'
+			 								},function(data){
+			 									console.log(data['parse']['text']['*']); 
+			 									var src = $('<div>').html(data['parse']['text']['*']).find('img').attr('src');
+			 									if(src){
+			 										callback(element,'https:'+src);
+			 									}
+			 									});
+			 					}
 		 					}
-	 					}
-	 					else{
-	 						$('#formsDialog [elemType="button"]').trigger('disableButtons');
-	 					} 
-	 				});
+		 					else{
+		 						$('#formsDialog [elemType="button"]').trigger('disableButtons');
+		 					} 
+		 				});
+	 				}	
 	 			}
 	 			//Cleanup & trigger event for limit reached
 	 			$(this).removeClass('mandatoryClass');
@@ -274,12 +283,20 @@ var formsGadget = {
 	 				}
 	 			}
 	 		});
-	 		div.appendChild(input);
-	 		if('validate' in dict){
-	 			validateIndication = document.createElement('span');
-	 			validateIndication.setAttribute('class','validateIndication');
-	 			div.appendChild(validateIndication);
-	 		}
+	 		//To show validation
+	 		
+	 			inputElementWrapper = document.createElement('span');
+	 			$(inputElementWrapper).addClass('inputElementWrapper');
+	 			if('validate' in dict){
+	 				$(inputElementWrapper).addClass('validationContainer');
+	 			}
+	 			if(dict['mandatory']){
+	 				$(inputElementWrapper).addClass('mandatoryContainer');
+	 			}
+	 			inputElementWrapper.appendChild(input);
+	 			div.appendChild(inputElementWrapper);
+	 		
+	 		
 	 		//this.addText(div,config['error-messageLength'],'error');
 	 		
 			return div;
@@ -650,7 +667,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 					formsGadget.createForm(config);
 					if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetPageCreated')){
 						//Show post edi message
-						mw.notify(config['config']['post-edit']);
+						mw.notify(config['config']['post-edit'],{autoHide:false});
 					}
 					$('.wp-formsGadget-button').click(function(e){
 													e.preventDefault();
