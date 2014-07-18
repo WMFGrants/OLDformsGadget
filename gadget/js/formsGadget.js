@@ -36,14 +36,17 @@ var formsGadget = {
 	},
 	'utilities' : {
 		'configPath' : 'User:Jeph_paul/formsGadgetConfig',
-		'grantType' : function(config){
+		'grantType' : function(){
 			var grant = mw.config.get('wgTitle').split('/')[0].replace(/ /g,'_');
+			/*
 			if (grant in config){
 				return config[grant];
 			}
 			else{
 				return config['default'];
 			}
+			*/
+			return grant;
 		},
 		/*
 	 	 * To detect the users default language
@@ -648,7 +651,8 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 			if(mw.config.get('wgPageContentLanguage') == 'en'){
 				var api = new mw.Api();
 				var utility = formsGadget.utilities;
-				var configFullPath = utility.configPath+'/'+utility.contentLanguage();
+				var grantType = utility.grantType();
+				var configFullPath = utility.configPath+'/'+grantType+'/'+utility.contentLanguage();
 				
 				api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
 					for (id in data.query.page){
@@ -659,7 +663,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 				var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
 						//Get the config for the detected language
 				$.when(jQuery.getScript(configUrl)).then(function(){
-					var config = utility.stripWhiteSpace(utility.grantType(formsGadgetConfig));
+					var config = utility.stripWhiteSpace(formsGadgetConfig);
 					formsGadget['formDict'] = config;
 					//Cleanup
 					formsGadget['wikiSectionTree'] = new formsGadget.tree();
