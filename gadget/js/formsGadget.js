@@ -142,7 +142,7 @@ var formsGadget = {
 			}
 			return div;
 		},
-		'checkTitle' : function(string,exists,titleStem){
+		'checkTitle' : function(string,exists,titleStem,type){
 			var that = this;
 			var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
 			var title = titleStem + string;
@@ -160,9 +160,17 @@ var formsGadget = {
 					var pageId = Object.keys(pages);
 					var pageExists = pageId != -1 ? true : false;
 					var imageExists = pages[pageId]['imagerepository'] ? true : false;
+					var value = 0;
+					if (type == 'image'){
+						value = imageExists;
+					}
+					else{
+						value = pageExists;
+					}
+					
 					if(that.timestamp < timestamp){
 						that.timestamp = timestamp;
-						that.found = !( ( pageExists ^ imageExists ) ^ exists );
+						that.found =  !(value ^ exists) ;
 						//temp
 						console.log('String ',string, 'found ',that.found);
 					}
@@ -255,7 +263,7 @@ var formsGadget = {
 		 				var exists = dict['validate'] == 'exists' ? 1:0;
 		 				//$(this).addClass(checkTitle(enteredString,exists));
 		 				var titleStem = 'image' in dict ? '' : that.formDict.config['page-home'];
-		 				$.when(that.checkTitle(enteredString,exists,titleStem)).then(function(){
+		 				$.when(that.checkTitle(enteredString,exists,titleStem,dict['type'])).then(function(){
 		 					//Cleanpup & remove redundant code
 		 					$(inputTextBox).removeClass('entrySatisfying entryNotSatisfying');
 		 					$(inputTextBox).addClass(that.found ? 'entrySatisfying' : 'entryNotSatisfying');
