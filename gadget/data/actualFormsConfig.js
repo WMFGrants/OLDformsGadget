@@ -9,7 +9,9 @@
   					'page-template': '',
   					'infobox': 'Probox/Idealab',
   					'talkpage-template': '',
-                    'page-home': 'Grants:IEG/Test/'
+                    'page-home': 'Grants:IEG/Test/',
+                    'toolkit-name': '',
+                    'toolkit-template': ''
   			},
   			'step-1':{
   					'projectNameTextbox': {

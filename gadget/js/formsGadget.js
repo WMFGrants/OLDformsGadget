@@ -86,15 +86,15 @@ var formsGadget = {
 			return dict;
 		},
 		'setPostEditFeedbackCookie' : function(value){
-			$.cookie(value,'true');
+			$.cookie(value,true,{'path':'/'});
 		},
 		/*
 		 * This function is used to check if a has been set by the above function 
 		 * to show the speech bubble on page reload
 		 */
 		'checkPostEditFeedbackCookie' : function(value){
-			if($.cookie(value) == 'true'){
-				$.cookie(value,'false');
+			if($.cookie(value)){
+				$.cookie(value,null,{'path':'/'});
 				return true;
 			}
 			else{
@@ -496,7 +496,7 @@ var formsGadget = {
 					//var value = parseInt(elem.val()) || parseInt(elem.val()) == 0 ? parseInt(elem.val()) : null;
 					if (elem.attr('type') == 'number'){
 						for (var i=0;i<elem.val(); i++){
-							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + i + '=\n';
+							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + (i+1) + '=\n';
 						}	
 					}
 					else if(elem.attr('type') == 'checkbox'){
@@ -519,6 +519,8 @@ var formsGadget = {
 			for(entry in hiddenFields){
 				infobox = infobox + '|' + hiddenFields[entry]['key'] + '=' + hiddenFields[entry]['value'] + '\n';
 			}
+			//Hardcoding creator/timestamp
+			infobox = infobox + '|' + 'timestamp = ~~~~';
 			//infobox = infobox.join('');
 			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
 			infobox = '{{' + probox + '\n' + infobox + '}} \n';
@@ -535,16 +537,36 @@ var formsGadget = {
 						'action': 'edit',
 						//Cleanup
 						'title': title,
-						'summary': 'Creating a test grant',
+						'summary': 'Creating the idea '+ title,
 						'text': page,
 						'watchlist':'watch',
 						token: mw.user.tokens.get('editToken')
 					}).then(function () {
+						//Creating Idea Toolkit
+						var toolkit = formsGadget.formDict['config']['toolkit-name'];
+						var toolkitContent = '{{' + formsGadget.formDict['config']['toolkit-template'] + '}}';
+						if (toolkit && toolkitContent){
+							var toolkitTitle = title + '/' + toolkit;
+							api.post({
+								'action': 'edit',
+								//Cleanup
+								'title': toolkitTitle,
+								'summary': 'Creating the toolkit for '+ title,
+								'text': toolkitContent,
+								'watchlist':'watch',
+								token: mw.user.tokens.get('editToken')
+							});
+						}
+						
+						// Redirecting to idea page
 						console.log('Successfully created new page');
 						//Cleanup
 						formsGadget.dialog.dialog('close');
 						formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetPageCreated');
 						window.location.href = location.origin + '/wiki/' + title;
+						
+					}).then(function (){
+						
 					});
 			
 			console.log(title,page);

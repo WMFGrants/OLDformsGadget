@@ -64,7 +64,7 @@
 }
 
 .formsGadget textarea:focus{
-	border-left-width: 3px;
+	border-left-width: 6px;
 	border-left-color:#4091ed;
 }
 
