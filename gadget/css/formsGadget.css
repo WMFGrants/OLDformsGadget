@@ -7,10 +7,10 @@
  *
  * "Forms" feature, to be used by the Wikimedia Foundation's Grants Programme, 
  */
-* {
--webkit-box-sizing: border-box;
--moz-box-sizing: border-box;
-box-sizing: border-box;
+.formsGadget * {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 .formsGadget .ui-state-hover{
@@ -55,7 +55,7 @@ box-sizing: border-box;
 
 .formsGadget textarea,.formsGadget input[type=textbox],.formsGadget input[type=number]{
 	outline: 0px;
-	padding: 14px;
+	padding: 14px 7px;
 	resize: none;
 	background-color: white;
 	border: 1px solid #DDD;
@@ -87,13 +87,24 @@ div.grantsHide{
 	font-style: italic;
 }
 
+.formsGadget input::-webkit-input-placeholder{
+	font-style: italic;
+}
+
+.formsGadget input::-moz-placeholder {  /* Firefox 19+ */
+    font-style: italic;
+}
+.formsGadget input:-ms-input-placeholder {  
+	font-style: italic;
+}
+
 .formsGadget input.entryNotSatisfying{
-	border-left-width: 3px;
+	border-left-width: 6px;
 	border-left-color: #D11D13;
 }
 
 .formsGadget input.entrySatisfying{
-	border-left-width: 3px;
+	border-left-width: 6px;
 	border-left-color: #347BFF;
 }
 
@@ -103,33 +114,43 @@ div.grantsHide{
 
 .formsGadget .text{
 	line-height: 10px;
-	margin: 3px 0px;
+	margin: 6px 0px;
 }
 
+.formsGadget .elementContainer{
+	padding: 7px 0px;
+}
 .formsGadget .inputListItem{
 	width: 50px;
 	margin-right: 30px;
 }
 
 .formsGadget input[type=textbox],.formsGadget input[type=number]{
-	padding: 2px;
+	padding: 7px;
 }
 
+.formsGadget input[type=number]{
+	text-align: center;
+}
 .formsGadget .inputListItemDescription{
 	/* width: 120px; */
 	display: inline-block;
 }
 
+.formsGadget .ui-widget-content a{
+	color: #0b0080;
+}
+
 .formsGadget .validationContainer.entrySatisfying:after{
 	content: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjQsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iMTEuMzEzcHgiIGhlaWdodD0iMTEuMzEzcHgiIHZpZXdCb3g9IjAgMCAxMS4zMTMgMTEuMzEzIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCAxMS4zMTMgMTEuMzEzIiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxwb2x5Z29uIGZpbGw9IiNCMEIxQjEiIHBvaW50cz0iMTEuMzEzLDIuMTIxIDkuMTkyLDAgNS42NTcsMy41MzUgMi4xMjIsMCAwLDIuMTIxIDMuNTM2LDUuNjU2IDAuMDAxLDkuMTkxIDIuMTIyLDExLjMxMyANCgk1LjY1Nyw3Ljc3NyA5LjE5MiwxMS4zMTIgMTEuMzEzLDkuMTkxIDcuNzc4LDUuNjU2ICIvPg0KPC9zdmc+DQo=);
-	padding: 2px 8px 2px 8px;
+	padding: 7px 8px 7px 8px;
 	background-color: #347BFF;
 	border: 1px solid #DDD;
 	border-width: 1px 1px 1px 0px;
 }
 .formsGadget .validationContainer.entryNotSatisfying:after{
 	content: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjQsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iMTEuMzEzcHgiIGhlaWdodD0iMTEuMzEzcHgiIHZpZXdCb3g9IjAgMCAxMS4zMTMgMTEuMzEzIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCAxMS4zMTMgMTEuMzEzIiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxwb2x5Z29uIGZpbGw9IiNCMEIxQjEiIHBvaW50cz0iMTEuMzEzLDIuMTIxIDkuMTkyLDAgNS42NTcsMy41MzUgMi4xMjIsMCAwLDIuMTIxIDMuNTM2LDUuNjU2IDAuMDAxLDkuMTkxIDIuMTIyLDExLjMxMyANCgk1LjY1Nyw3Ljc3NyA5LjE5MiwxMS4zMTIgMTEuMzEzLDkuMTkxIDcuNzc4LDUuNjU2ICIvPg0KPC9zdmc+DQo=);
-	padding: 2px 8px 2px 8px;
+	padding: 7px 8px 7px 8px;
 	background-color: #D11D13;
 	border: 1px solid #DDD;
 	border-width: 1px 1px 1px 0px;
@@ -148,8 +169,11 @@ div.grantsHide{
 }
 .formsGadget input[type=textbox]{
 	margin: 0px 0px 10px 0px;
+	width: 90%;
+	/*padding: 7px;*/
 }
 
 .formsGadget input[type=submit]{
 	margin-right: .5em;
+	float: right;
 }

@@ -128,6 +128,20 @@ var formsGadget = {
 			'parent': '',
 			'id': null
 		},
+		'elementContainer' : function(){
+			var div = document.createElement('div');
+			div.className = 'elementContainer';
+			return div;
+		},
+		'addDescription': function(dict,div){
+			for (key in dict){
+				if(key.indexOf('text') != -1){
+					this.addText(div,dict[key],'text');
+					delete dict[key];
+				}
+			}
+			return div;
+		},
 		'checkTitle' : function(string,exists,titleStem){
 			var that = this;
 			var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
@@ -156,8 +170,9 @@ var formsGadget = {
 				});
 		},
 		'inputList': function(type,list,title,dict){
-		 	var div = document.createElement('div');
+		 	var div = this.elementContainer();
 			div = this.addText(div,title,'title');
+			this.addDescription(dict,div);
 			for (elem in list){
 				var label = document.createElement('div');
 				var checkbox = document.createElement('input');
@@ -194,9 +209,10 @@ var formsGadget = {
 		'textBox': function(dict,type,callback,element){
 			var config = this.createTextBoxConfig(this.defaultTextBoxConfig,dict);
 	 		var className  = type == 'small'? 'smallTextBox': 'largeTextBox';
-	 		var div = document.createElement('div');
+	 		var div = this.elementContainer();
 	 		
 	 		div = this.addText(div,config['title'],'title');
+	 		this.addDescription(dict,div);
 	 		if (type == 'large'){
 	 			var input = document.createElement('textarea');
 	 		}
@@ -346,13 +362,10 @@ var formsGadget = {
 	  		dict['validate'] = 'exists';
 	  		//cleanup
 	  		dict['placeholder'] = 'placeholder' in dict ? dict['placeholder'] : 'File:Test.png';
-			var div = document.createElement('div');
+			var div = this.elementContainer();
 			this.addText(div,dict['title'],'title');
-			for (key in dict){
-				if(key.indexOf('text') != -1){
-					this.addText(div,dict[key],'text');
-				}
-			}
+			this.addDescription(dict,div);
+			
 			var img = document.createElement('img');
 			img.src = url;
 			dict['title'] = 'imageTitleBox' in dict ? dict['imageTitleBox'] : 'Enter the file name';
@@ -365,6 +378,11 @@ var formsGadget = {
 			div.appendChild(img);
 			//div.appendChild(description);
 			div.appendChild(textbox);
+			var commonsLink = document.createElement('a');
+			commonsLink.href = 'https://commons.wikimedia.org/wiki/Main_Page';
+			commonsLink.target = '_blank';
+			commonsLink.innerText = 'link' in dict? dict['link'] : 'Search Wikimedia Commons for an image';
+			div.appendChild(commonsLink);
 			return div;
 		},
 		'button': function(type,text){
@@ -372,11 +390,8 @@ var formsGadget = {
 			a.type='submit';
 			a.setAttribute('elemType','button');
 			//a.href = '#';
-			if(type == 'cancel'){
+			if(type == 'cancel' || type == 'back'){
 				a.className = 'mw-ui-button cancel mw-ui-quiet';
-			}
-			else if (type == 'next'){
-				a.className = 'mw-ui-button mw-ui-constructive';
 			}
 			else {
 				a.className = 'mw-ui-button mw-ui-constructive';
