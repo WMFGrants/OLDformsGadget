@@ -528,7 +528,7 @@ var formsGadget = {
 				infobox = infobox + '|' + hiddenFields[entry]['key'] + '=' + hiddenFields[entry]['value'] + '\n';
 			}
 			//Hardcoding creator/timestamp
-			infobox = infobox + '|' + 'timestamp = ~~~~';
+			infobox = infobox + '|' + 'timestamp = ~~~~~';
 			//infobox = infobox.join('');
 			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
 			infobox = '{{' + probox + '\n' + infobox + '}} \n';
