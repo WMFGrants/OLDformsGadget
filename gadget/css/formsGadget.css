@@ -63,7 +63,7 @@
 	margin-bottom: 1em;
 }
 
-.formsGadget textarea:focus{
+.formsGadget textarea:focus, .formsGadget input[type=textbox]:focus{
 	border-left-width: 6px;
 	border-left-color:#4091ed;
 }
@@ -98,12 +98,12 @@ div.grantsHide{
 	font-style: italic;
 }
 
-.formsGadget input.entryNotSatisfying{
+.formsGadget input.entryNotSatisfying:focus{
 	border-left-width: 6px;
 	border-left-color: #D11D13;
 }
 
-.formsGadget input.entrySatisfying{
+.formsGadget input.entrySatisfying:focus{
 	border-left-width: 6px;
 	border-left-color: #347BFF;
 }

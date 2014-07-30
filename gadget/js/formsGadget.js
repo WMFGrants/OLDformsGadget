@@ -233,6 +233,11 @@ var formsGadget = {
 	 			div.style['display'] = 'none';
 	 			input.value = dict['value'];
 	 		}
+	 		/*
+	 		if ('value' in dict){
+	 			
+	 		}
+	 		*/
 	 		//Cleanup
 	 		if('page-title' in dict){
 	 			input.setAttribute('page-title',true);
@@ -257,6 +262,7 @@ var formsGadget = {
 	 			var enteredString = $(this).val();
 	 			if(!enteredString && !dict['mandatory']){
 	 				$('#formsDialog [elemType="button"]').trigger('enableButtons');
+	 				that.timestamp = Date.now();
 	 			}
 	 			else{
 	 				if( 'validate' in dict && enteredString){
@@ -340,15 +346,18 @@ var formsGadget = {
 			this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
 			return this.inputList('checkbox',list,dict['title'],dict);
 		}, 
+		
 		'addText': function(container,text,type){
 			var textHolder = document.createElement('p');
 			textHolder.innerText = text;
 			if (type == 'title'){
 				textHolder.className = 'title';
 			}
-			else{
+			else if (type == 'text'){
 				textHolder.className = 'text';
-				//textHolder.style['display'] = 'none';
+			}
+			else{
+				textHolder.className = type;
 			}
 			container.appendChild(textHolder);
 			return container;
@@ -362,6 +371,13 @@ var formsGadget = {
 			}
 			return this.inputList('number',list,dict['title'],dict);
 		},
+		'link': function(dict){
+			var link = document.createElement('a');
+			link.href = 'href' in dict? dict['href'] : 'https://commons.wikimedia.org/wiki/Main_Page';
+			link.target = '_blank';
+			link.innerText = 'link' in dict? dict['link'] : 'Search Wikimedia Commons for an image';
+			return link;
+		},
 		'image': function (dict) {
 			var url = dict['url'];
 			var text = dict['title'];
@@ -370,10 +386,10 @@ var formsGadget = {
 	  		dict['validate'] = 'exists';
 	  		//cleanup
 	  		dict['placeholder'] = 'placeholder' in dict ? dict['placeholder'] : 'File:Test.png';
+	  		//dict['value'] = url;
 			var div = this.elementContainer();
 			this.addText(div,dict['title'],'title');
 			this.addDescription(dict,div);
-			
 			var img = document.createElement('img');
 			img.src = url;
 			dict['title'] = 'imageTitleBox' in dict ? dict['imageTitleBox'] : 'Enter the file name';
@@ -386,10 +402,7 @@ var formsGadget = {
 			div.appendChild(img);
 			//div.appendChild(description);
 			div.appendChild(textbox);
-			var commonsLink = document.createElement('a');
-			commonsLink.href = 'https://commons.wikimedia.org/wiki/Main_Page';
-			commonsLink.target = '_blank';
-			commonsLink.innerText = 'link' in dict? dict['link'] : 'Search Wikimedia Commons for an image';
+			var commonsLink = this.link(dict);
 			div.appendChild(commonsLink);
 			return div;
 		},
@@ -529,6 +542,7 @@ var formsGadget = {
 			}
 			//Hardcoding creator/timestamp
 			infobox = infobox + '|' + 'timestamp = ~~~~~';
+			infobox = infobox + '|' + 'creator = ' + mw.user.getName();
 			//infobox = infobox.join('');
 			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
 			infobox = '{{' + probox + '\n' + infobox + '}} \n';
@@ -553,9 +567,10 @@ var formsGadget = {
 						//Creating Idea Toolkit
 						var toolkit = formsGadget.formDict['config']['toolkit-name'];
 						var toolkitContent = '{{' + formsGadget.formDict['config']['toolkit-template'] + '}}';
+						var createToolkit = true;
 						if (toolkit && toolkitContent){
 							var toolkitTitle = title + '/' + toolkit;
-							api.post({
+							createToolkit = api.post({
 								'action': 'edit',
 								//Cleanup
 								'title': toolkitTitle,
@@ -569,10 +584,11 @@ var formsGadget = {
 						// Redirecting to idea page
 						console.log('Successfully created new page');
 						//Cleanup
-						formsGadget.dialog.dialog('close');
-						formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetPageCreated');
-						window.location.href = location.origin + '/wiki/' + title;
-						
+						$.when(createToolkit).then(function(){
+							formsGadget.dialog.dialog('close');
+							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetPageCreated');
+							window.location.href = location.origin + '/wiki/' + title;
+						});
 					}).then(function (){
 						
 					});
@@ -589,6 +605,11 @@ var formsGadget = {
 		this.formElement.formDict = formDict;
 		this.formElement.wikiSectionTree = this.wikiSectionTree;
 		var dialogInternal = document.createElement('div');
+		//User not logged in
+		if (! mw.user.getName()){
+			var errorMessage = formDict['config']['error-not-logged-in'];
+			this.formElement.addText(dialogInternal,errorMessage,'errorMessage');	
+		}
 		var counter = 0;
 		for (step in formDict){
 			if (step != 'config'){
@@ -693,41 +714,43 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 	$(function() {
 		(function(){
 			var namespace = mw.config.get('wgCanonicalNamespace');
-			if(mw.config.get('wgPageContentLanguage') == 'en'){
-				var api = new mw.Api();
-				var utility = formsGadget.utilities;
-				var grantType = utility.grantType();
-				var configFullPath = utility.configPath+'/'+grantType+'/'+utility.contentLanguage();
-				
-				api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
-					for (id in data.query.page){
-							if (id == -1){
-								configFullPath = util.configPath+'/en';
+			if (  namespace == "Grants" ){
+				if(mw.config.get('wgPageContentLanguage') == 'en'){
+					var api = new mw.Api();
+					var utility = formsGadget.utilities;
+					var grantType = utility.grantType();
+					var configFullPath = utility.configPath+'/'+grantType+'/'+utility.contentLanguage();
+					
+					api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
+						for (id in data.query.page){
+								if (id == -1){
+									configFullPath = util.configPath+'/'+grantType+'/en';
+								}
+						}
+						var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
+								//Get the config for the detected language
+						$.when(jQuery.getScript(configUrl)).then(function(){
+							var config = utility.stripWhiteSpace(formsGadgetConfig);
+							formsGadget['formDict'] = config;
+							//Cleanup
+							formsGadget['wikiSectionTree'] = new formsGadget.tree();
+							formsGadget.openDialog();
+							formsGadget.createForm(config);
+							if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetPageCreated')){
+								//Show post edi message
+								mw.notify(config['config']['post-edit'],{autoHide:false});
 							}
-					}
-				var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
-						//Get the config for the detected language
-				$.when(jQuery.getScript(configUrl)).then(function(){
-					var config = utility.stripWhiteSpace(formsGadgetConfig);
-					formsGadget['formDict'] = config;
-					//Cleanup
-					formsGadget['wikiSectionTree'] = new formsGadget.tree();
-					formsGadget.openDialog();
-					formsGadget.createForm(config);
-					if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetPageCreated')){
-						//Show post edi message
-						mw.notify(config['config']['post-edit'],{autoHide:false});
-					}
-					$('.wp-formsGadget-button').click(function(e){
-													e.preventDefault();
-													formsGadget.openDialog();
-												});
-				});
-				});
-			}
-			else{
-					$('.wp-formsGadget-button').hide();
+							$('.wp-formsGadget-button').click(function(e){
+															e.preventDefault();
+															formsGadget.openDialog();
+														});
+						});
+					});
 				}
+				else{
+					$('.wp-formsGadget-button').hide();
+				}	
+			}
 		})();
 	});
 });
