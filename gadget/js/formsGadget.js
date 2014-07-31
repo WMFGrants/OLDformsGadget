@@ -126,7 +126,8 @@ var formsGadget = {
 			'error-notFilled': 'Mandatory field',
 			'value': '',
 			'parent': '',
-			'id': null
+			'id': null,
+			'comment': ''
 		},
 		'elementContainer' : function(){
 			var div = document.createElement('div');
@@ -251,6 +252,7 @@ var formsGadget = {
 	 		input.setAttribute('placeholder',config['placeholder']);
 	 		input.setAttribute('data-character-length',config['characterLength']);
 	 		input.setAttribute('data-mandatory',config['mandatory']);
+	 		input.setAttribute('data-comment',config['comment']);
 	 		input.setAttribute('data-add-to',config['add-to']);
 	 		var conditionalAttr = config['add-to'] == 'infobox' ? config['infobox-param'] : config['section-header'];
 	 		input.setAttribute('data-add-to-attribute',conditionalAttr);
@@ -263,6 +265,7 @@ var formsGadget = {
 	 			if(!enteredString && !dict['mandatory']){
 	 				$('#formsDialog [elemType="button"]').trigger('enableButtons');
 	 				that.timestamp = Date.now();
+	 				that.found = true;
 	 			}
 	 			else{
 	 				if( 'validate' in dict && enteredString){
@@ -303,6 +306,7 @@ var formsGadget = {
 	 				//$('#formsDialog [elemType="button"]').trigger('disableButtons');
 	 				$(this).val($(this).val().substring(0,config['characterLength']));
 	 			}
+	 			/*
 	 			else{
 	 				var flag = 0;
 	 				$('#formsDialog [type="textbox"]').each(function(){
@@ -315,6 +319,7 @@ var formsGadget = {
 	 					//$('#formsDialog [elemType="button"]').trigger('enableButtons');
 	 				}
 	 			}
+	 			*/
 	 		});
 	 		//To show validation
 	 		
@@ -501,7 +506,8 @@ var formsGadget = {
 					var elem = $('#formsDialog #'+id);
 					value = elem.val() ? elem.val() : '';
 					var heading = elem.attr('data-add-to-attribute');
-					return { 'heading': heading, 'value': value};
+					var comment = elem.attr('data-comment');
+					return { 'heading': heading, 'value': value, 'comment': comment };
 				});
 			}
 			
@@ -514,7 +520,6 @@ var formsGadget = {
 				}
 				else{
 					//Cleanup & Simplify
-					//var value = parseInt(elem.val()) || parseInt(elem.val()) == 0 ? parseInt(elem.val()) : null;
 					if (elem.attr('type') == 'number'){
 						for (var i=0;i<elem.val(); i++){
 							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + (i+1) + '=\n';
@@ -527,6 +532,10 @@ var formsGadget = {
 						else{
 							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=\n';
 						}
+					}
+					//Fix this hardcoding more elegantly
+					else if(elem.attr('data-add-to-attribute') == 'image'){
+						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.attr('placeholder') + '\n';
 					}
 					else{
 						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
@@ -608,7 +617,10 @@ var formsGadget = {
 		//User not logged in
 		if (! mw.user.getName()){
 			var errorMessage = formDict['config']['error-not-logged-in'];
-			this.formElement.addText(dialogInternal,errorMessage,'errorMessage');	
+			var errorDiv = document.createElement('div');
+			errorDiv.className = 'mw-ui-vform';
+			this.formElement.addText(errorDiv,errorMessage,'error');
+			dialogInternal.appendChild(errorDiv);
 		}
 		var counter = 0;
 		for (step in formDict){
@@ -689,7 +701,7 @@ var formsGadget = {
 			var string = '';
 			for (var i=0;i<indent;i++){
 				string = string + '=';
-			}
+				}
 			return string;
 		};
 		this.traverse = function(rootList,level,callback){
@@ -701,7 +713,8 @@ var formsGadget = {
 			for (elem in rootList){
 				var root = rootList[elem];
 				var sectionValues = callback(root.id);
-				var section = wikiSectionHeaderMarkup + sectionValues['heading'] + wikiSectionHeaderMarkup + '\n' + sectionValues['value'] + '\n';
+				var section = wikiSectionHeaderMarkup + sectionValues['heading'] + wikiSectionHeaderMarkup + '\n' ;
+				var section = section + ( sectionValues['comment'] ? sectionValues['comment'] + '\n' : '' ) + sectionValues['value'] + '\n';
 				this.sections = this.sections + section;
 				root = root.child;
 				this.traverse(root,level,callback);
