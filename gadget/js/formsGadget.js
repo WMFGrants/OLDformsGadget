@@ -36,6 +36,9 @@ var formsGadget = {
 	},
 	'utilities' : {
 		'configPath' : 'User:Jeph_paul/formsGadgetConfig',
+		'getPageTitle': function(){
+			return true;
+		},
 		'grantType' : function(){
 			var grant = mw.config.get('wgTitle').split('/')[0].replace(/ /g,'_');
 			/*
@@ -487,8 +490,164 @@ var formsGadget = {
 				this.createWikiPage();
 			}
 		},
-		'createWikiPage' :  function(){
+		'findInfobox': function(wikitext){
+			var proboxRe = /{{( |\n)*Probox/gi;
+			var startIndex = markup.search(proboxRe);
+			var counter = 0;
+			var endIndex = 0;
+			for (i=startIndex;i<markup.length;i++){ 
+				if(markup[i] == '}' && markup[i+1] == '}'){ 
+						counter++;
+				} 
+				if(markup[i] == '{' && markup[i+1] == '{'){
+					counter--;
+				} 
+				if(counter == 0){
+					var endIndex = i+2; 
+					break;
+				}	
+			}
+			if (counter != 0){
+				return '';
+			}
+			return markup.slice(startIndex,endIndex);
+		},
+		'infobox': function(wikitext){
+			var paramRe = /( )*\|( )*[A-Za-z0-9_]+( )*=/gi;
+			var infoboxString = this.findInfobox(wikitext);
+			var units = infoboxString.split('\n');
+			var infobox = [];
+			var infoboxParams = {};
+			var parts,line,param,value;
+			for (unit in units){
+				line = units[unit];
+				if(line.search(paramRe) != -1){
+					parts = line.split('=');
+					param = $.trim(line[0].replace('|',''));
+					value = $.trim(line[1]);
+					infoboxParams[param] = value;
+					infobox.push(infoboxParams);
+				}
+				else{
+					infobox.push(line);
+				}
+			}
+			return infobox;
+		},
+		'modifyInfoboxParam': function(infobox,param,newValue){
+			var flag = true;
+			for (elem in infobox){
+				if(typeof(infobox[elem]) == 'object' && infobox[elem]['param'] == param){
+					infobox[elem]['value'] = newValue;
+					flag = true;
+				}
+			}
+			if (flag){
+				infobox.push({'param':param,'value':newValue});
+			}
+			return infobox;
+		},
+		'createInfobox' : function(infobox){
+			var infoboxString = '{{Probox\n';
+			for (elem in infobox){
+				if (typeof(infobox[elem]) == 'object'){
+					infoboxString = infoboxString + '|'+ infobox[elem]['param'] + '=' + infobox[elem]['value'] + '\n'; 
+				}
+				else{
+					infoboxString = infoboxString + '\n';
+				}
+			}
+			infoboxString = infoboxString + '}}\n';
+			return infoboxString;
+		},
+		'modifyWikiPage' : function(){
 			var infobox = '';
+			var infoboxString = '';
+			var sections = '';
+			var api = new mw.Api();
+			//var pageTitle = $('#formsDialog [page-title]').val();
+			
+			var roots = this.wikiSectionTree.roots;
+			
+			for (elem in roots){
+				console.log('---------');
+				this.wikiSectionTree.traverse([roots[elem]],1,function(id){
+					var elem = $('#formsDialog #'+id);
+					value = elem.val() ? elem.val() : '';
+					var heading = elem.attr('data-add-to-attribute');
+					return { 'heading': heading, 'value': value};
+				});
+			}
+			
+			$('#formsDialog [data-add-to]').each(function(index,elem){
+				var elem = $(elem);
+				if(elem.attr('data-add-to') == 'infobox' ){
+					if(elem.attr('type') == 'checkbox'){
+						if (elem.attr('checked')){
+							infobox = this.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute'),elem.val());
+						}
+						else{
+							infobox = this.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute'),null);
+						}
+					}
+					else{
+						infobox = this.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute'),elem.val());
+					}
+				}
+			});
+			/*
+			* infobox entries
+			*/
+			var hiddenFields = this.hiddenInfoboxFields;
+			for(entry in hiddenFields){
+				infobox = infobox.push({'param':hiddenFields[entry]['key'],'value':hiddenFields[entry]['value']});
+			}
+			
+			//should not hard code '/Toolkit'
+			var title = mw.config.get('wgPageName').replace('/Toolkit');
+			//Getting the infobox
+			var gettingInfobox = api.get({
+						'format':'json',
+						'action':'parse',
+						'prop':'wikitext',
+						'page': title,
+						'section': 0
+					}).then(function(result){
+							infobox = this.infobox(result.parse.wikitext['*']);
+					});
+			$.when(gettingInfobox).then(function(){
+				modifiedInfoboxString = this.createInfoBox(infobox);
+				api.post({
+					'action' : 'edit',
+					'title' : title,
+					'text' : modifiedInfoboxString,
+					'summary' : 'Editing Infobox parameters',
+					'section': 0,
+					'watchlist':'watch',
+					'token' : mw.user.tokens.values.editToken
+				}).then(function(){
+					sections = this.wikiSectionTree.sections;
+					api.post({
+						'action' : 'edit',
+						'title' : title,
+						'text' : sections,
+						'summary' : 'Adding new sections',
+						'appendtext':'',
+						'watchlist':'watch',
+						'token' : mw.user.tokens.values.editToken
+					}).then(function(){
+						// Redirecting to idea page
+						console.log('Successfully Added new sections & modified the infobox');
+						//Cleanup
+						formsGadget.dialog.dialog('close');
+						formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetFeedback');
+						window.location.href = location.origin + '/wiki/' + title;
+					});
+				});
+			});	
+		},
+		'createWikiPage' :  function(){
+						var infobox = '';
 			var page = '';
 			var api = new mw.Api();
 			var pageTitle = $('#formsDialog [page-title]').val();
@@ -736,21 +895,19 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 							formsGadget['wikiSectionTree'] = new formsGadget.tree();
 							formsGadget.openDialog();
 							formsGadget.createForm(config);
-							if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetPageCreated')){
+							if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetFeedback')){
 								//Show post edi message
 								mw.notify(config['config']['post-edit'],{autoHide:false});
 							}
-							$('.wp-formsGadget-button').click(function(e){
-															e.preventDefault();
-															formsGadget.openDialog();
-														});
-						});
+							$('.wp-formsGadget-button').click(function(){
+								formsGadget.openDialog();
+							});
 					});
-				}
-				else{
+				});
+			}
+			else{
 					$('.wp-formsGadget-button').hide();
 				}	
-			}
 		})();
 	});
 });
@@ -770,3 +927,4 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
  * 5.) Cleanup the dialog when closed & opened.
  * 6.) Fix the nowiki ~~~~ in hidden field timestamp
  */
+
