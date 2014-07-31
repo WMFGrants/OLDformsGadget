@@ -487,7 +487,12 @@ var formsGadget = {
 				}
 			}
 			else{
-				this.createWikiPage();
+				if (formsGadget.type == 'create'){
+					this.createWikiPage();
+				}
+				else{
+					this.modifyWikiPage();
+				}
 			}
 		},
 		'findInfobox': function(wikitext){
@@ -873,7 +878,8 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 	$(function() {
 		(function(){
 			var namespace = mw.config.get('wgCanonicalNamespace');
-			if (  namespace == "Grants" ){
+			var formsGadgetType = $('.wp-formsGadget-create').length ? 'create' : ( $('.wp-formsGadget-expand').length ? 'expand' : 0 );
+			if ( formsGadgetType ){
 				if(mw.config.get('wgPageContentLanguage') == 'en'){
 					var api = new mw.Api();
 					var utility = formsGadget.utilities;
@@ -889,25 +895,28 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 						var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
 								//Get the config for the detected language
 						$.when(jQuery.getScript(configUrl)).then(function(){
-							var config = utility.stripWhiteSpace(formsGadgetConfig);
+							var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetType]);
 							formsGadget['formDict'] = config;
 							//Cleanup
 							formsGadget['wikiSectionTree'] = new formsGadget.tree();
 							formsGadget.openDialog();
 							formsGadget.createForm(config);
+							formsGadget.type = formsGadgetType;
 							if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetFeedback')){
 								//Show post edi message
 								mw.notify(config['config']['post-edit'],{autoHide:false});
 							}
-							$('.wp-formsGadget-button').click(function(){
-								formsGadget.openDialog();
-							});
+							$('.wp-formsGadget-' + formsGadgetType).click(function(e){
+															e.preventDefault();
+															formsGadget.openDialog();
+														});
+						});
 					});
-				});
-			}
-			else{
-					$('.wp-formsGadget-button').hide();
+				}
+				else{
+					$('.wp-formsGadget-' + formsGadgetType).hide();
 				}	
+			}
 		})();
 	});
 });
