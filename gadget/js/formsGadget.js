@@ -732,7 +732,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 					var api = new mw.Api();
 					var utility = formsGadget.utilities;
 					var grantType = utility.grantType();
-					var configFullPath = utility.configPath+'/'+grantType+'/'+utility.contentLanguage();
+					var configFullPath = utility.configPath+'/'+grantType+'/'+utility.userLanguage();
 					
 					api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
 						for (id in data.query.page){
