@@ -41,14 +41,6 @@ var formsGadget = {
 		},
 		'grantType' : function(){
 			var grant = mw.config.get('wgTitle').split('/')[0].replace(/ /g,'_');
-			/*
-			if (grant in config){
-				return config[grant];
-			}
-			else{
-				return config['default'];
-			}
-			*/
 			return grant;
 		},
 		/*
@@ -114,6 +106,7 @@ var formsGadget = {
 		 * Radio button list
 		 * Stepper list
 		 * Image/s
+		 * Dropdown
 		 */
 		'hiddenInfoboxFields' : [],
 		'found' : false,
@@ -230,17 +223,11 @@ var formsGadget = {
 	 		else{
 	 			var input = document.createElement('input');
 	 		}
-	 		//var api = new mw.Api();
 	 		//cleanup
 	 		if(dict['visibility'] == 'hidden'){
 	 			div.style['display'] = 'none';
 	 			input.value = dict['value'];
 	 		}
-	 		/*
-	 		if ('value' in dict){
-	 			
-	 		}
-	 		*/
 	 		//Cleanup
 	 		if('page-title' in dict){
 	 			input.setAttribute('page-title',true);
@@ -303,20 +290,7 @@ var formsGadget = {
 	 			//Cleanup & trigger event for limit reached
 	 			$(this).removeClass('mandatoryClass');
 	 			if ($(this).val().length > config['characterLength']){
-	 				//$('#formsDialog [elemType="button"]').trigger('disableButtons');
 	 				$(this).val($(this).val().substring(0,config['characterLength']));
-	 			}
-	 			else{
-	 				var flag = 0;
-	 				$('#formsDialog [type="textbox"]').each(function(){
-	 					var elem = $(this);
-	 					if (elem.val().length > elem.attr('data-character-length')){
-	 						flag++;
-	 					}
-	 				});
-	 				if(!flag){
-	 					//$('#formsDialog [elemType="button"]').trigger('enableButtons');
-	 				}
 	 			}
 	 		});
 	 		//To show validation
@@ -331,10 +305,7 @@ var formsGadget = {
 	 			}
 	 			inputElementWrapper.appendChild(input);
 	 			div.appendChild(inputElementWrapper);
-	 		
-	 		
-	 		//this.addText(div,config['error-messageLength'],'error');
-	 		
+	 			
 			return div;
 		},
 		'smallTextBox': function (dict,callback,element) {
@@ -374,6 +345,30 @@ var formsGadget = {
 			}
 			return this.inputList('number',list,dict['title'],dict);
 		},
+		'dropdownList': function(dict){
+			var div = this.elementContainer();
+			div = this.addText(div,title,'title');
+			this.addDescription(dict,div);
+			var values = dict['values'];
+			var select = document.createElement('select');
+			select.setAttribute('type','textbox');
+	 		select.setAttribute('class','dropdown');
+	 		select.setAttribute('data-placeholder',dict['placeholder']);
+	 		select.setAttribute('data-add-to',dict['add-to']);
+	 		select.setAttribute('data-add-to-attribute',dict['infobox-param']);
+			var option;
+			for (elem in values){
+				option = document.createElement('option');
+				option.value = values[elem];
+				select.appendChild(option);
+			}
+			$('.formsGadget .dropdown').chosen({
+								disable_search: true,
+								width: '50%',
+							});
+			div.appendChild(select);
+			return div;
+		},
 		'link': function(dict){
 			var link = document.createElement('a');
 			link.href = 'href' in dict? dict['href'] : 'https://commons.wikimedia.org/wiki/Main_Page';
@@ -389,7 +384,6 @@ var formsGadget = {
 	  		dict['validate'] = 'exists';
 	  		//cleanup
 	  		dict['placeholder'] = 'placeholder' in dict ? dict['placeholder'] : 'File:Test.png';
-	  		//dict['value'] = url;
 			var div = this.elementContainer();
 			this.addText(div,dict['title'],'title');
 			this.addDescription(dict,div);
@@ -403,7 +397,6 @@ var formsGadget = {
 			},img);
 			var description = document.createTextNode(text);
 			div.appendChild(img);
-			//div.appendChild(description);
 			div.appendChild(textbox);
 			var commonsLink = this.link(dict);
 			div.appendChild(commonsLink);
@@ -413,7 +406,6 @@ var formsGadget = {
 			var a = document.createElement('input');
 			a.type='submit';
 			a.setAttribute('elemType','button');
-			//a.href = '#';
 			if(type == 'cancel' || type == 'back'){
 				a.className = 'mw-ui-button cancel mw-ui-quiet';
 			}
@@ -570,7 +562,6 @@ var formsGadget = {
 			var infoboxString = '';
 			var sections = '';
 			var api = new mw.Api();
-			//var pageTitle = $('#formsDialog [page-title]').val();
 			
 			var roots = this.wikiSectionTree.roots;
 			
@@ -652,7 +643,7 @@ var formsGadget = {
 			});	
 		},
 		'createWikiPage' :  function(){
-						var infobox = '';
+			var infobox = '';
 			var page = '';
 			var api = new mw.Api();
 			var pageTitle = $('#formsDialog [page-title]').val();
@@ -707,7 +698,6 @@ var formsGadget = {
 			//Hardcoding creator/timestamp
 			infobox = infobox + '|' + 'timestamp = ~~~~~';
 			infobox = infobox + '|' + 'creator = ' + mw.user.getName();
-			//infobox = infobox.join('');
 			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
 			infobox = '{{' + probox + '\n' + infobox + '}} \n';
 			page = infobox + this.wikiSectionTree.sections;
@@ -810,7 +800,6 @@ var formsGadget = {
 		$('#formsDialog').append(dialogInternal);
 		return true;
 	},
-	//'wikiSectionTree' : new this.tree(),
 	'tree' : function(){
 		var rootList = {};
 		var nodeList = {};
@@ -936,4 +925,3 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
  * 5.) Cleanup the dialog when closed & opened.
  * 6.) Fix the nowiki ~~~~ in hidden field timestamp
  */
-
