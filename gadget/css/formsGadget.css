@@ -176,3 +176,33 @@ div.grantsHide{
 	margin-right: .5em;
 	float: right;
 }
+
+/* Dropdown styling */
+.joinGadget .chzn-container-single .chzn-single{
+	background-image: none;
+	border-radius: 1px;
+	box-shadow: none;
+	border: 1px solid #ddd;
+	padding: .25em;
+	padding-left: 14px;
+}
+.joinGadget .chzn-container .chzn-results li {
+	padding-left: 10px;
+}
+.joinGadget .chzn-container-active.chzn-with-drop .chzn-single{
+	/*Get a better color*/
+	background: #F6F3F3;
+	border: 1px solid #aaa;
+	padding: .25em;
+	padding-left: 14px;
+}
+.joinGadget .chzn-container .chzn-results .highlighted{
+	background-image: none;
+	background-color: #347bff;
+}
+.joinGadget .chzn-container-single .chzn-single div b{
+	background-position: 0px 5px;
+}
+.joinGadget .chzn-container-active.chzn-with-drop .chzn-single div b{
+	background-position: -18px 5px;
+}
