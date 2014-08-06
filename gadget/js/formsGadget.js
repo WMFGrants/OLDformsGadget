@@ -264,6 +264,7 @@ var formsGadget = {
 	 			var enteredString = $(this).val();
 	 			if(!enteredString && !dict['mandatory']){
 	 				$('#formsDialog [elemType="button"]').trigger('enableButtons');
+	 				$(inputTextBox).parent().removeClass('entrySatisfying entryNotSatisfying');
 	 				that.timestamp = Date.now();
 	 				that.found = true;
 	 			}
