@@ -9,7 +9,7 @@
  * "Forms" feature, to be used by the Wikimedia Foundation's Grants Programme
  */
 //<nowiki>
-importStylesheet('User:Jeph_paul/formsGadget.css');
+importStylesheet('MediaWiki:Gadget-formWizard.css');
 var formsGadget = {
 	'that' : this,
 	'createDialog' : function(){
@@ -35,7 +35,7 @@ var formsGadget = {
 		}
 	},
 	'utilities' : {
-		'configPath' : 'User:Jeph_paul/formsGadgetConfig',
+		'configPath' : 'Meta:FormWizard/Config',
 		'grantType' : function(){
 			var grant = mw.config.get('wgTitle').split('/')[0].replace(/ /g,'_');
 			/*
@@ -535,7 +535,8 @@ var formsGadget = {
 					}
 					//Fix this hardcoding more elegantly
 					else if(elem.attr('data-add-to-attribute') == 'image'){
-						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.attr('placeholder') + '\n';
+						var image = elem.val() ? elem.val() : elem.attr('placeholder');
+						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + image + '\n';
 					}
 					else{
 						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
@@ -767,19 +768,3 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 		})();
 	});
 });
-			
-/*
- * Notes
- * Default values for all textboxes/ input elements
- * 
- */
-//</nowiki>
-/*
- * Todo
- * 1.) Default value for image 
- * 2.) Styling for Mandatory field, Limit reached, Exists/ Does not exist
- * 3.) Write test cases
- * 4.) Dropdowns
- * 5.) Cleanup the dialog when closed & opened.
- * 6.) Fix the nowiki ~~~~ in hidden field timestamp
- */
