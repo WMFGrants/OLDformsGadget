@@ -9,7 +9,7 @@
  * "Forms" feature, to be used by the Wikimedia Foundation's Grants Programme
  */
 //<nowiki>
-importStylesheet('User:Jeph_paul/formsGadget.css');
+importStylesheet('MediaWiki:Gadget-formWizard.css');
 var formsGadget = {
 	'that' : this,
 	'createDialog' : function(){
@@ -254,6 +254,7 @@ var formsGadget = {
 	 			var enteredString = $(this).val();
 	 			if(!enteredString && !dict['mandatory']){
 	 				$('#formsDialog [elemType="button"]').trigger('enableButtons');
+	 				$(inputTextBox).parent().removeClass('entrySatisfying entryNotSatisfying');
 	 				that.timestamp = Date.now();
 	 				that.found = true;
 	 			}
@@ -689,7 +690,8 @@ var formsGadget = {
 					}
 					//Fix this hardcoding more elegantly
 					else if(elem.attr('data-add-to-attribute') == 'image'){
-						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.attr('placeholder') + '\n';
+						var image = elem.val() ? elem.val() : elem.attr('placeholder');
+						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + image + '\n';
 					}
 					else{
 						infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
@@ -704,8 +706,11 @@ var formsGadget = {
 				infobox = infobox + '|' + hiddenFields[entry]['key'] + '=' + hiddenFields[entry]['value'] + '\n';
 			}
 			//Hardcoding creator/timestamp
-			infobox = infobox + '|' + 'timestamp = ~~~~~';
-			infobox = infobox + '|' + 'creator = ' + mw.user.getName();
+
+			infobox = infobox + '|' + 'timestamp = ~~~~~' + '\n' ;
+			infobox = infobox + '|' + 'creator = ' + mw.user.getName() + '\n' ;
+			//infobox = infobox.join('');
+
 			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
 			infobox = '{{' + probox + '\n' + infobox + '}} \n';
 			page = infobox + this.wikiSectionTree.sections;
@@ -716,6 +721,8 @@ var formsGadget = {
 			 */
 			
 			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
+			//Disabling buttons on ajox post 
+			$('#formsDialog [elemType="button"]').trigger('disableButtons');
 			
 			api.post({
 						'action': 'edit',
@@ -750,9 +757,11 @@ var formsGadget = {
 							formsGadget.dialog.dialog('close');
 							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetPageCreated');
 							window.location.href = location.origin + '/wiki/' + title;
+						},function(){
+							$('#formsDialog [elemType="button"]').trigger('enableButtons');
 						});
-					}).then(function (){
-						
+					},function(){
+						$('#formsDialog [elemType="button"]').trigger('enableButtons');
 					});
 			
 			console.log(title,page);
@@ -956,19 +965,3 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 		})();
 	});
 });
-			
-/*
- * Notes
- * Default values for all textboxes/ input elements
- * 
- */
-//</nowiki>
-/*
- * Todo
- * 1.) Default value for image 
- * 2.) Styling for Mandatory field, Limit reached, Exists/ Does not exist
- * 3.) Write test cases
- * 4.) Dropdowns
- * 5.) Cleanup the dialog when closed & opened.
- * 6.) Fix the nowiki ~~~~ in hidden field timestamp
- */
