@@ -552,8 +552,8 @@ var formsGadget = {
 				infobox = infobox + '|' + hiddenFields[entry]['key'] + '=' + hiddenFields[entry]['value'] + '\n';
 			}
 			//Hardcoding creator/timestamp
-			infobox = infobox + '|' + 'timestamp = ~~~~~';
-			infobox = infobox + '|' + 'creator = ' + mw.user.getName();
+			infobox = infobox + '|' + 'timestamp = ~~~~~' + '\n' ;
+			infobox = infobox + '|' + 'creator = ' + mw.user.getName() + '\n' ;
 			//infobox = infobox.join('');
 			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
 			infobox = '{{' + probox + '\n' + infobox + '}} \n';
@@ -565,6 +565,8 @@ var formsGadget = {
 			 */
 			
 			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
+			//Disabling buttons on ajox post 
+			$('#formsDialog [elemType="button"]').trigger('disableButtons');
 			
 			api.post({
 						'action': 'edit',
@@ -599,9 +601,11 @@ var formsGadget = {
 							formsGadget.dialog.dialog('close');
 							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetPageCreated');
 							window.location.href = location.origin + '/wiki/' + title;
+						},function(){
+							$('#formsDialog [elemType="button"]').trigger('enableButtons');
 						});
-					}).then(function (){
-						
+					},function(){
+						$('#formsDialog [elemType="button"]').trigger('enableButtons');
 					});
 			
 			console.log(title,page);
