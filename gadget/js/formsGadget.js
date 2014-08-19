@@ -14,7 +14,7 @@ var formsGadget = {
 	'that' : this,
 	'createDialog' : function(){
 		var that = this;
-		this.dialog = $('<div id="formsDialog"></div>').dialog({
+		var dialogDict = {
 							dialogClass: 'formsGadget',
 							autoOpen: false,
 							title: that.formDict.config['dialog-title'],
@@ -23,7 +23,13 @@ var formsGadget = {
 							closeOnEscape: true,
 							resizable: false,
 							draggable: false,
-						});	
+					};
+		if($('#formsDialogExpand').length){
+			this.dialog = $('#formsDialogExpand').dialog(dialogDict);
+		}
+		else{
+			this.dialog = $('<div id="formsDialogExpand"></div>').dialog(dialogDict);
+		}	
 	},
 	'dialog' : null,
 	'openDialog' : function () {
@@ -34,8 +40,12 @@ var formsGadget = {
 			this.dialog.dialog('open');
 		}
 	},
-		'cleanupDialog': function (){
+	'cleanupDialog': function (){
+		if (this.dialog){
+			this.dialog.dialog('destroy');	
+		}
 		this.dialog = null;
+		$('#formsDialogExpand').html('');
 	},
 	'utilities' : {
 		'configPath' : 'User:Jeph_paul/formsGadgetConfig',
@@ -256,7 +266,7 @@ var formsGadget = {
 	 			var inputTextBox = this;
 	 			var enteredString = $(this).val();
 	 			if(!enteredString && !dict['mandatory']){
-	 				$('#formsDialog [elemType="button"]').trigger('enableButtons');
+	 				$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
 	 				$(inputTextBox).parent().removeClass('entrySatisfying entryNotSatisfying');
 	 				that.timestamp = Date.now();
 	 				that.found = true;
@@ -273,7 +283,7 @@ var formsGadget = {
 		 					$(inputTextBox).parent().removeClass('entrySatisfying entryNotSatisfying');
 		 					$(inputTextBox).parent().addClass(that.found ? 'entrySatisfying' : 'entryNotSatisfying');
 		 					if (that.found){
-		 						$('#formsDialog [elemType="button"]').trigger('enableButtons');
+		 						$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
 			 					if(typeof(callback) === 'function' && that.found){
 			 						var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
 			 						$.getJSON(apiUrl,{'action':'parse',
@@ -289,7 +299,7 @@ var formsGadget = {
 			 					}
 		 					}
 		 					else{
-		 						$('#formsDialog [elemType="button"]').trigger('disableButtons');
+		 						$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
 		 					} 
 		 				});
 	 				}	
@@ -450,8 +460,8 @@ var formsGadget = {
 			var button = this.button('next',dict['title']);
 			var that = this;
 			button.onclick = function(){
-				$('#formsDialog [step]').hide();
-				$('#'+ dict['step']).next().show();
+				$('#formsDialogExpand [step]').hide();
+				$('#formsDialogExpand'+' #'+dict['step']).next().show();
 			};
 			return button;
 		},
@@ -459,15 +469,15 @@ var formsGadget = {
 			var button = this.button('back',dict['title']);
 			var that = this;
 			button.onclick = function(){
-				$('#formsDialog [step]').hide();
-				$('#'+dict['step']).prev().show();
+				$('#formsDialogExpand [step]').hide();
+				$('#formsDialogExpand'+' #'+dict['step']).prev().show();
 			};
 			return button;
 		},
 		'validateForm': function(){
 			var counter = 0;
 			var firstElem;
-			$('[data-mandatory="true"]').each(function(){
+			$('#formsDialogExpand [data-mandatory="true"]').each(function(){
 				var elem = $(this);
 				if(!elem.val()){
 					if (counter == 0){
@@ -479,7 +489,7 @@ var formsGadget = {
 			});
 			//Add mandatory filed Event & styling
 			if(firstElem){
-				$('#formsDialog [step]').hide();
+				$('#formsDialogExpand [step]').hide();
 				while(true){
 					if (firstElem.attr('step')){
 						firstElem.show();
@@ -581,7 +591,7 @@ var formsGadget = {
 			for (elem in roots){
 				console.log('---------');
 				this.wikiSectionTree.traverse([roots[elem]],1,function(id){
-					var elem = $('#formsDialog #'+id);
+					var elem = $('#formsDialogExpand #'+id);
 					value = elem.val() ? elem.val() : '';
 					var heading = elem.attr('data-add-to-attribute');
 					return { 'heading': heading, 'value': value};
@@ -600,7 +610,7 @@ var formsGadget = {
 						'section': 0
 					}).then(function(result){
 						infobox = that.infoboxObjectify(result.parse.wikitext['*']);
-						$('#formsDialog [data-add-to]').each(function(index,elem){
+						$('#formsDialogExpand [data-add-to]').each(function(index,elem){
 							var elem = $(elem);
 							if(elem.attr('data-add-to') == 'infobox' ){
 								if(elem.attr('type') == 'checkbox'){
@@ -659,14 +669,14 @@ var formsGadget = {
 			var infobox = '';
 			var page = '';
 			var api = new mw.Api();
-			var pageTitle = $('#formsDialog [page-title]').val();
+			var pageTitle = $('#formsDialogExpand [page-title]').val();
 			
 			var roots = this.wikiSectionTree.roots;
 			
 			for (elem in roots){
 				console.log('---------');
 				this.wikiSectionTree.traverse([roots[elem]],1,function(id){
-					var elem = $('#formsDialog #'+id);
+					var elem = $('#formsDialogExpand #'+id);
 					value = elem.val() ? elem.val() : '';
 					var heading = elem.attr('data-add-to-attribute');
 					var comment = elem.attr('data-comment');
@@ -674,7 +684,7 @@ var formsGadget = {
 				});
 			}
 			
-			$('#formsDialog [data-add-to]').each(function(index,elem){
+			$('#formsDialogExpand [data-add-to]').each(function(index,elem){
 				var elem = $(elem);
 				if(elem.attr('data-add-to') == 'section' ){
 					//var value = elem.val() ? elem.val() : '';
@@ -730,7 +740,7 @@ var formsGadget = {
 			
 			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
 			//Disabling buttons on ajox post 
-			$('#formsDialog [elemType="button"]').trigger('disableButtons');
+			$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
 			
 			api.post({
 						'action': 'edit',
@@ -766,10 +776,10 @@ var formsGadget = {
 							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetPageCreated');
 							window.location.href = location.origin + '/wiki/' + title;
 						},function(){
-							$('#formsDialog [elemType="button"]').trigger('enableButtons');
+							$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
 						});
 					},function(){
-						$('#formsDialog [elemType="button"]').trigger('enableButtons');
+						$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
 					});
 			
 			console.log(title,page);
@@ -825,7 +835,7 @@ var formsGadget = {
 				dialogInternal.appendChild(panel);
 			}
 		}
-		$('#formsDialog').append(dialogInternal);
+		$('#formsDialogExpand').append(dialogInternal);
 		return true;
 	},
 	'tree' : function(){
@@ -903,6 +913,8 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 					var utility = formsGadget.utilities;
 					//Cleanup
 					if (formsGadgetType == 'expand'){
+						//Temporarily showing button for testing
+						$('.wp-formsGadget-expand').show();
 						$('.wp-formsGadget-' + formsGadgetType).click(function(e){
 							e.preventDefault();
 							var grantType = $(this).attr('data-grantType');
