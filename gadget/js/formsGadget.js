@@ -9,7 +9,7 @@
  * "Forms" feature, to be used by the Wikimedia Foundation's Grants Programme
  */
 //<nowiki>
-importStylesheet('MediaWiki:Gadget-formWizard.css');
+importStylesheet('User:Jeph_paul/formsGadget.css');
 var formsGadget = {
 	'that' : this,
 	'createDialog' : function(){
@@ -17,7 +17,7 @@ var formsGadget = {
 		var dialogDict = {
 							dialogClass: 'formsGadget',
 							autoOpen: false,
-							title: that.formDict.config['dialog-title'],
+							//title: that.formDict.config['dialog-title'],
 							width: '495px',
 							modal: true,
 							closeOnEscape: true,
@@ -29,9 +29,14 @@ var formsGadget = {
 		}
 		else{
 			this.dialog = $('<div id="formsDialogExpand"></div>').dialog(dialogDict);
-		}	
+		}
+		$('#formsDialogExpand').append('<div class="loading"></div>');
+			
 	},
 	'dialog' : null,
+	'openPanel': function(){
+		this.dialog.dialog('open');
+	},
 	'openDialog' : function () {
 		if (this.dialog === null){
 			this.createDialog();
@@ -917,6 +922,13 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 						$('.wp-formsGadget-expand').show();
 						$('.wp-formsGadget-' + formsGadgetType).click(function(e){
 							e.preventDefault();
+							
+							formsGadget.cleanupDialog();
+							formsGadget.openDialog();
+							formsGadget.openPanel();
+							
+							$('#formsDialogExpand .loading').show();
+							
 							var grantType = $(this).attr('data-grantType');
 							
 							var configFullPath = utility.configPath+'/'+grantType+'/'+utility.contentLanguage();
@@ -933,12 +945,14 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 									var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetType]);
 									formsGadget['formDict'] = config;
 									//Cleanup
+									$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
 									formsGadget['wikiSectionTree'] = new formsGadget.tree();
-									formsGadget.cleanupDialog();
 									formsGadget.openDialog();
 									formsGadget.createForm(config);
 									formsGadget.type = formsGadgetType;
 									formsGadget.openDialog();
+									$('#formsDialogExpand .loading').hide();
+									
 									if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
 										//Show post edi message
 										mw.notify(config['config']['post-edit'],{autoHide:false});
@@ -959,9 +973,16 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 							}
 							var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
 									//Get the config for the detected language
+									
+							//Adding the loading for the dialog
+							
+															
 							$.when(jQuery.getScript(configUrl)).then(function(){
 								var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetType]);
+								$('#formsDialogExpand .loading').hide();
 								formsGadget['formDict'] = config;
+								//Dialog Title
+								$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
 								//Cleanup
 								formsGadget['wikiSectionTree'] = new formsGadget.tree();
 								formsGadget.openDialog();
@@ -971,7 +992,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 									//Show post edi message
 									mw.notify(config['config']['post-edit'],{autoHide:false});
 								}
-								$('.wp-formsGadget-' + formsGadgetType ).click(function(e){
+							$('.wp-formsGadget-' + formsGadgetType ).click(function(e){
 																e.preventDefault();
 																formsGadget.openDialog();
 															});
