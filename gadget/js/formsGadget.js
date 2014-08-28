@@ -212,6 +212,15 @@ var formsGadget = {
 			var config = {};
 			for (key in defaultConfig){
 				actualConfig[key] = key in actualConfig? actualConfig[key] : defaultConfig[key];
+				//remove/Cleanup
+				if (key == 'mandatory' && (typeof(actualConfig[key]) == 'string')){
+					if (actualConfig[key] == 'true'){
+						actualConfig[key] = true;
+					}
+					else{
+						actualConfig[key] = false;
+					}
+				}
 			}
 			return actualConfig;
 		},
@@ -352,18 +361,17 @@ var formsGadget = {
 			this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
 			return this.inputList('checkbox',list,dict['title'],dict);
 		}, 
-		
 		'addText': function(container,text,type){
-			var textHolder = document.createElement('p');
-			textHolder.innerText = text;
+			var textHolder = $('p');
+			textHolder.html(text);
 			if (type == 'title'){
-				textHolder.className = 'title';
+				textHolder.addClass('title');
 			}
 			else if (type == 'text'){
-				textHolder.className = 'text';
+				textHolder.addClass('text');
 			}
 			else{
-				textHolder.className = type;
+				textHolder.addClass(type);
 			}
 			container.appendChild(textHolder);
 			return container;
