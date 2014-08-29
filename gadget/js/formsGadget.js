@@ -362,7 +362,7 @@ var formsGadget = {
 			return this.inputList('checkbox',list,dict['title'],dict);
 		}, 
 		'addText': function(container,text,type){
-			var textHolder = $('p');
+			var textHolder = $('<p>');
 			textHolder.html(text);
 			if (type == 'title'){
 				textHolder.addClass('title');
