@@ -373,7 +373,7 @@ var formsGadget = {
 			else{
 				textHolder.addClass(type);
 			}
-			container.appendChild(textHolder);
+			container.appendChild(textHolder[0]);
 			return container;
 		},
 		'stepperList': function (dict) {
@@ -384,6 +384,36 @@ var formsGadget = {
 				dict['max'] = 9;
 			}
 			return this.inputList('number',list,dict['title'],dict);
+		},
+		'dropdownList': function(dict){
+			var div = this.elementContainer();
+			div = this.addText(div,dict['title'],'title');
+			this.addDescription(dict,div);
+			var values = dict['values'];
+			var select = document.createElement('select');
+			select.setAttribute('type','textbox');
+	 		select.setAttribute('class','dropdown');
+	 		select.setAttribute('data-placeholder',dict['placeholder']);
+	 		select.setAttribute('data-add-to',dict['add-to']);
+	 		select.setAttribute('data-add-to-attribute',dict['infobox-param']);
+			var option;
+			for (elem in values){
+				/*
+				option = document.createElement('option');
+				option.value = values[elem];
+				option.innerText = values[elem];
+				select.appendChild(option);
+				*/
+				option = $('<option>').attr('value',values[elem]).html(values[elem]);
+				select.appendChild(option[0]);
+			}
+			/*
+			$('.formsGadget .dropdown').chosen({
+								disable_search: true,
+								width: '50%',
+							})*/
+			div.appendChild(select);
+			return div;
 		},
 		'link': function(dict){
 			var link = document.createElement('a');
@@ -670,6 +700,10 @@ var formsGadget = {
 			}
 		}
 		$('#formsDialog').append(dialogInternal);
+		$('.formsGadget .dropdown').chosen({
+								disable_search: true,
+								width: '50%',
+						});
 		return true;
 	},
 	//'wikiSectionTree' : new this.tree(),
