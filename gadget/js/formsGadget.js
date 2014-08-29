@@ -226,6 +226,14 @@ var formsGadget = {
 			var config = {};
 			for (key in defaultConfig){
 				actualConfig[key] = key in actualConfig? actualConfig[key] : defaultConfig[key];
+				if (key == 'mandatory' && (typeof(actualConfig[key]) == 'string')){
+					if (actualConfig[key] == 'true'){
+						actualConfig[key] = true;
+					}
+					else{
+						actualConfig[key] = false;
+					}
+				}
 			}
 			return actualConfig;
 		},
@@ -345,18 +353,18 @@ var formsGadget = {
 		}, 
 		
 		'addText': function(container,text,type){
-			var textHolder = document.createElement('p');
-			textHolder.innerText = text;
+			var textHolder = $('<p>');
+			textHolder.html(text);
 			if (type == 'title'){
-				textHolder.className = 'title';
+				textHolder.addClass('title');
 			}
 			else if (type == 'text'){
-				textHolder.className = 'text';
+				textHolder.addClass('text');
 			}
 			else{
-				textHolder.className = type;
+				textHolder.addClass(type);
 			}
-			container.appendChild(textHolder);
+			container.appendChild(textHolder[0]);
 			return container;
 		},
 		'stepperList': function (dict) {
@@ -381,10 +389,14 @@ var formsGadget = {
 	 		select.setAttribute('data-add-to-attribute',dict['infobox-param']);
 			var option;
 			for (elem in values){
+				/*
 				option = document.createElement('option');
 				option.value = values[elem];
 				option.innerText = values[elem];
 				select.appendChild(option);
+				*/
+				option = $('<option>').attr('value',values[elem]).html(values[elem]);
+				select.appendChild(option[0]);
 			}
 			/*
 			$('.formsGadget .dropdown').chosen({
@@ -568,7 +580,7 @@ var formsGadget = {
 				}
 			}
 			if (flag){
-				infobox.push({'param':param,'value':newValue});
+				infobox.splice(-1,0,{'param':param,'value':newValue});
 			}
 			return infobox;
 		},
@@ -841,6 +853,10 @@ var formsGadget = {
 			}
 		}
 		$('#formsDialogExpand').append(dialogInternal);
+		$('.formsGadget .dropdown').chosen({
+								disable_search: true,
+								width: '50%',
+						});
 		return true;
 	},
 	'tree' : function(){
