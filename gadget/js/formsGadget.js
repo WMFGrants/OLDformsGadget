@@ -783,7 +783,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 					var configFullPath = utility.configPath+'/'+grantType+'/'+utility.userLanguage();
 					
 					api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
-						for (id in data.query.page){
+						for (id in data.query.pages){
 								if (id == -1){
 									configFullPath = util.configPath+'/'+grantType+'/en';
 								}
