@@ -358,7 +358,9 @@ var formsGadget = {
 		'checkboxList': function (dict) {
 			var list = dict['choiceList'];
 			var hidden = dict['hidden'];
-			this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
+			if('hidden' in dict){
+				this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
+			}
 			return this.inputList('checkbox',list,dict['title'],dict);
 		}, 
 		'addText': function(container,text,type){
@@ -376,9 +378,15 @@ var formsGadget = {
 			container.appendChild(textHolder[0]);
 			return container;
 		},
+		'text': function(dict){
+			var textHolder = $('<p>');
+			return textHolder.html(dict['string']);
+		},
 		'stepperList': function (dict) {
 			var list = dict['choiceList'];
-			this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
+			if('hidden' in dict){
+				this.hiddenInfoboxFields = this.hiddenInfoboxFields.concat(dict['hidden']);
+			}
 			dict['min'] = 0;
 			if(!('max' in dict)){
 				dict['max'] = 9;
@@ -397,6 +405,7 @@ var formsGadget = {
 	 		select.setAttribute('data-add-to',dict['add-to']);
 	 		select.setAttribute('data-add-to-attribute',dict['infobox-param']);
 			var option;
+			select.appendChild($('<option>')[0]);
 			for (elem in values){
 				/*
 				option = document.createElement('option');
@@ -616,16 +625,18 @@ var formsGadget = {
 						token: mw.user.tokens.get('editToken')
 					}).then(function () {
 						//Creating Idea Toolkit
-						var toolkit = formsGadget.formDict['config']['toolkit-name'];
+						var formsConfig = formsGadget.formDict['config'];
+						var toolkit = formsConfig['toolkit-name'];
 						var toolkitContent = '{{' + formsGadget.formDict['config']['toolkit-template'] + '}}';
 						var createToolkit = true;
 						if (toolkit && toolkitContent){
 							var toolkitTitle = title + '/' + toolkit;
+							var summary = formsConfig['edit-comment-prefix'] + title + formsConfig['edit-comment-suffix'];
 							createToolkit = api.post({
 								'action': 'edit',
 								//Cleanup
 								'title': toolkitTitle,
-								'summary': 'Creating the toolkit for '+ title,
+								'summary': summary,
 								'text': toolkitContent,
 								'watchlist':'watch',
 								token: mw.user.tokens.get('editToken')
