@@ -380,7 +380,7 @@ var formsGadget = {
 		},
 		'text': function(dict){
 			var textHolder = $('<p>');
-			return textHolder.html(dict['string']);
+			return textHolder.html(dict['string'])[0];
 		},
 		'stepperList': function (dict) {
 			var list = dict['choiceList'];
@@ -425,11 +425,11 @@ var formsGadget = {
 			return div;
 		},
 		'link': function(dict){
-			var link = document.createElement('a');
-			link.href = 'href' in dict? dict['href'] : 'https://commons.wikimedia.org/wiki/Main_Page';
-			link.target = '_blank';
-			link.innerText = 'link' in dict? dict['link'] : 'Search Wikimedia Commons for an image';
-			return link;
+			var link = $('<a>');
+			link.attr('href','href' in dict? dict['href'] : 'https://commons.wikimedia.org/wiki/Main_Page');
+			link.attr('target','_blank');
+			link.html('link' in dict? dict['link'] : 'Search Wikimedia Commons for an image');
+			return link[0];
 		},
 		'image': function (dict) {
 			var url = dict['url'];
@@ -544,7 +544,7 @@ var formsGadget = {
 			var infobox = '';
 			var page = '';
 			var api = new mw.Api();
-			var pageTitle = $('#formsDialog [page-title]').val();
+			var pageTitle = $.trim($('#formsDialog [page-title]').val());
 			
 			var roots = this.wikiSectionTree.roots;
 			
@@ -615,11 +615,21 @@ var formsGadget = {
 			//Disabling buttons on ajox post 
 			$('#formsDialog [elemType="button"]').trigger('disableButtons');
 			
+			var summary = '';
+			var formsConfig = formsGadget.formDict['config'];
+			if (formsConfig['edit-comment-prefix']){
+				summary = formsConfig['edit-comment-prefix'] + ' '; 
+			}
+			summary = summary + ' Creating the idea '+ title + ' ';
+			if (formsConfig['edit-comment-suffix']){
+				summary = summary + formsConfig['edit-comment-suffix'];
+			}
+			
 			api.post({
 						'action': 'edit',
 						//Cleanup
 						'title': title,
-						'summary': 'Creating the idea '+ title,
+						'summary': summary,
 						'text': page,
 						'watchlist':'watch',
 						token: mw.user.tokens.get('editToken')
@@ -631,7 +641,15 @@ var formsGadget = {
 						var createToolkit = true;
 						if (toolkit && toolkitContent){
 							var toolkitTitle = title + '/' + toolkit;
-							var summary = formsConfig['edit-comment-prefix'] + title + formsConfig['edit-comment-suffix'];
+							var summary = '';
+							if (formsConfig['edit-comment-prefix']){
+								summary = formsConfig['edit-comment-prefix'] + ' ';
+							}
+							summary = summary + title;
+							if (formsConfig['edit-comment-suffix']){
+								summary = summary + formsConfig['edit-comment-suffix'] + ' ';
+							}
+							
 							createToolkit = api.post({
 								'action': 'edit',
 								//Cleanup
@@ -796,7 +814,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 					api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
 						for (id in data.query.pages){
 								if (id == -1){
-									configFullPath = util.configPath+'/'+grantType+'/en';
+									configFullPath = utility.configPath+'/'+grantType+'/en';
 								}
 						}
 						var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
