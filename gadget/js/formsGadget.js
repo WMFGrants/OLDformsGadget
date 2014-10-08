@@ -620,7 +620,10 @@ var formsGadget = {
 			if (formsConfig['edit-comment-prefix']){
 				summary = formsConfig['edit-comment-prefix'] + ' '; 
 			}
-			summary = summary + ' Creating the idea '+ title + ' ';
+			else{
+				summary = ' Creating the idea ';
+			}
+			summary = summary + title + ' ';
 			if (formsConfig['edit-comment-suffix']){
 				summary = summary + formsConfig['edit-comment-suffix'];
 			}
