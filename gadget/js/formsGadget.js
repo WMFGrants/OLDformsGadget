@@ -787,7 +787,18 @@ var formsGadget = {
 			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
 			//Disabling buttons on ajox post 
 			$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
-			
+			var summary = '';
+			var formsConfig = formsGadget.formDict['config'];
+			if (formsConfig['edit-comment-prefix']){
+				summary = formsConfig['edit-comment-prefix'] + ' '; 
+			}
+			else{
+				summary = ' Creating the idea ';
+			}
+			summary = summary + title + ' ';
+			if (formsConfig['edit-comment-suffix']){
+				summary = summary + formsConfig['edit-comment-suffix'];
+			}
 			api.post({
 						'action': 'edit',
 						//Cleanup
@@ -798,13 +809,13 @@ var formsGadget = {
 						token: mw.user.tokens.get('editToken')
 					}).then(function () {
 						//Creating Idea Toolkit
-						var formsConfig = formsGadget.formDict['config'];
+						//var formsConfig = formsGadget.formDict['config'];
 						var toolkit = formsConfig['toolkit-name'];
 						var toolkitContent = '{{' + formsConfig['toolkit-template'] + '}}';
 						var createToolkit = true;
 						if (toolkit && toolkitContent){
 							var toolkitTitle = title + '/' + toolkit;
-							var summary = formsConfig['edit-comment-prefix'] + title + formsConfig['edit-comment-suffix'];
+							var summary = 'Adding the toolkit for ' + title;
 							createToolkit = api.post({
 								'action': 'edit',
 								//Cleanup
