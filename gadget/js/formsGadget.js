@@ -192,7 +192,7 @@ var formsGadget = {
 					
 				});
 		},
-		'inputList': function(type,list,title,dict){
+		'inputList': function(type,list,title,dict,role){
 		 	var div = this.elementContainer();
 			div = this.addText(div,title,'title');
 			this.addDescription(dict,div);
@@ -208,6 +208,9 @@ var formsGadget = {
 				}
 				checkbox.value = value;
 				checkbox.setAttribute('data-add-to',dict['add-to']);
+				if(role){
+					checkbox.setAttribute('data-role',true);
+				}
 				checkbox.className = 'inputListItem';
 				
 				checkbox.setAttribute('data-add-to-attribute',key);
@@ -217,7 +220,7 @@ var formsGadget = {
 				description.className = 'inputListItemDescription';
 				description.textContent = descriptionText;
 				label.appendChild(checkbox);
-				label.appendChild(description);		
+				label.appendChild(description);
 				div.appendChild(label);
 			}
 			return div;
@@ -371,7 +374,7 @@ var formsGadget = {
 		},
 		'text': function(dict){
 			var textHolder = $('<p>');
-			return textHolder.html(dict['string']);
+			return textHolder.html(dict['string'])[0];
 		},
 		'stepperList': function (dict) {
 			var list = dict['choiceList'];
@@ -382,7 +385,7 @@ var formsGadget = {
 			if(!('max' in dict)){
 				dict['max'] = 9;
 			}
-			return this.inputList('number',list,dict['title'],dict);
+			return this.inputList('number',list,dict['title'],dict,true);
 		},
 		'dropdownList': function(dict){
 			var div = this.elementContainer();
@@ -534,9 +537,8 @@ var formsGadget = {
 		},
 		'infoboxString': '',
 		'remainingSectionString': '',
-		'extractInfoboxString': function(markup){
-			var proboxRe = /{{( |\n)*Probox/gi;
-			var startIndex = markup.search(proboxRe);
+		'extractInfobox' : function(markup){
+			var startIndex = markup.indexOf('{{Probox');
 			var counter = 0;
 			var endIndex = 0;
 			for (i=startIndex;i<markup.length;i++){ 
@@ -549,18 +551,23 @@ var formsGadget = {
 				if(counter == 0){
 					var endIndex = i+2; 
 					break;
-				}	
+				}
 			}
 			if (counter != 0){
 				return '';
 			}
-			this.infoboxString = markup.slice(startIndex,endIndex);
-			this.remainingSectionString = markup.slice(endIndex);
+			var infobox = { 
+				'infobox' : markup.slice(startIndex,endIndex),
+			    'before' : markup.slice(0,startIndex),
+				'after' : markup.slice(endIndex),
+			};
+			//return markup.slice(startIndex,endIndex);
+			return infobox;
 		},
-		'infoboxObjectify': function(wikitext){
+		'infoboxObjectify': function(infoboxString){
 			var paramRe = /( )*\|( )*[A-Za-z0-9_]+( )*=/gi;
-			this.extractInfoboxString(wikitext);
-			var units = this.infoboxString.split('\n');
+			//this.extractInfoboxString(wikitext);
+			var units = infoboxString.split('\n');
 			var infobox = [];
 			var infoboxParams = {};
 			var parts,line,param,value;
@@ -588,7 +595,7 @@ var formsGadget = {
 				}
 			}
 			if (flag){
-				infobox.splice(-1,0,{'param':param,'value':newValue});
+				infobox.splice(-1,0,{'param':param, 'value':newValue});
 			}
 			return infobox;
 		},
@@ -596,7 +603,12 @@ var formsGadget = {
 			var infoboxString = '';
 			for (elem in infobox){
 				if (typeof(infobox[elem]) == 'object'){
-					infoboxString = infoboxString + '|'+ infobox[elem]['param'] + '=' + infobox[elem]['value'] + '\n'; 
+					if(infobox[elem]['value']){
+						infoboxString = infoboxString + '|' + infobox[elem]['param'] + '=' + infobox[elem]['value'] + '\n';
+					}
+					else{
+						infoboxString = infoboxString + '|' + infobox[elem]['param'] + '=' + '\n';
+					}
 				}
 				else{
 					infoboxString = infoboxString + infobox[elem] +'\n';
@@ -634,7 +646,10 @@ var formsGadget = {
 						'page': title,
 						'section': 0
 					}).then(function(result){
-						infobox = that.infoboxObjectify(result.parse.wikitext['*']);
+						var elements = that.extractInfobox(result.parse.wikitext['*']);
+						var infobox = that.infoboxObjectify(elements['infobox']);
+						var before = elements['before'];
+						var after = elements['after'];
 						$('#formsDialogExpand [data-add-to]').each(function(index,elem){
 							var elem = $(elem);
 							if(elem.attr('data-add-to') == 'infobox' ){
@@ -644,6 +659,11 @@ var formsGadget = {
 									}
 									else{
 										infobox = that.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute'),null);
+									}
+								}
+								else if(elem.attr('data-role')){
+									for (var i=0;i<elem.val(); i++){
+										infobox = that.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute')+i, null);
 									}
 								}
 								else{
@@ -658,7 +678,7 @@ var formsGadget = {
 						for(entry in hiddenFields){
 							infobox = infobox.push({'param':hiddenFields[entry]['key'],'value':hiddenFields[entry]['value']});
 						}
-						modifiedSection = that.stringifyInfobox(infobox) + that.remainingSectionString;
+						modifiedSection = before + that.stringifyInfobox(infobox) + after;
 						var formsConfig = formsGadget.formDict['config'];
 						api.post({
 							'action' : 'edit',
@@ -719,7 +739,7 @@ var formsGadget = {
 				}
 				else{
 					//Cleanup & Simplify
-					if (elem.attr('type') == 'number'){
+					if (elem.attr('data-role')){
 						for (var i=0;i<elem.val(); i++){
 							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + (i+1) + '=\n';
 						}	
@@ -939,7 +959,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 		(function(){
 			var namespace = mw.config.get('wgCanonicalNamespace');
 			var formsGadgetType = $('.wp-formsGadget-create').length ? 'create' : ( $('.wp-formsGadget-expand').length ? 'expand' : 0 );
-			if ( namespace == 'Grants' ){
+			if ( namespace == 'Grants' || namespace == 'User' ){
 				if(mw.config.get('wgPageContentLanguage') == 'en'){
 					var api = new mw.Api();
 					var utility = formsGadget.utilities;
@@ -963,7 +983,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 							api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
 								for (id in data.query.pages){
 										if (id == -1){
-											configFullPath = util.configPath+'/'+grantType+'/en';
+											configFullPath = utility.configPath+'/'+grantType+'/en';
 										}
 								}
 								var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
@@ -995,7 +1015,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 						api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
 							for (id in data.query.pages){
 									if (id == -1){
-										configFullPath = util.configPath+'/'+grantType+'/en';
+										configFullPath = utility.configPath+'/'+grantType+'/en';
 									}
 							}
 							var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
