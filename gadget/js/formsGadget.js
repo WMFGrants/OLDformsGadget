@@ -616,6 +616,26 @@ var formsGadget = {
 			}
 			return infoboxString;
 		},
+		'createEditSummary' : function(title,subcomment){
+			var summary = '';
+			var formsConfig = formsGadget.formDict['config'];
+			if (formsConfig['edit-comment-prefix']){
+				summary = formsConfig['edit-comment-prefix'] + ' '; 
+			}
+			else{
+				summary = formsConfig['edit-comment-default'] + ' ';
+			}
+			if(subcomment){
+				summary = summary + title + ' (' + subcomment + ') ';
+			}
+			else{
+				summary = summary + title + ' ';
+			}
+			if (formsConfig['edit-comment-suffix']){
+				summary = summary + formsConfig['edit-comment-suffix'];
+			}
+			return summary;
+		},
 		'modifyWikiPage' : function(){
 			var that = this;
 			var infobox = '';
@@ -684,7 +704,7 @@ var formsGadget = {
 							'action' : 'edit',
 							'title' : title,
 							'text' : modifiedSection,
-							'summary' : 'Editing Infobox parameters',
+							'summary' : that.createEditSummary(title,'editing infobox parameters'),
 							'section': 0,
 							'watchlist':'watch',
 							'token' : mw.user.tokens.values.editToken
@@ -694,7 +714,7 @@ var formsGadget = {
 								'action' : 'edit',
 								'title' : title,
 								//'text' : sections,
-								'summary' : 'Expanding Sections',
+								'summary' : that.createEditSummary(title,'editing section'),
 								'appendtext':newSections,
 								'watchlist':'watch',
 								'token' : mw.user.tokens.values.editToken
@@ -712,6 +732,7 @@ var formsGadget = {
 			});	
 		},
 		'createWikiPage' :  function(){
+			var that = this;
 			var infobox = '';
 			var page = '';
 			var api = new mw.Api();
@@ -787,23 +808,11 @@ var formsGadget = {
 			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
 			//Disabling buttons on ajox post 
 			$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
-			var summary = '';
-			var formsConfig = formsGadget.formDict['config'];
-			if (formsConfig['edit-comment-prefix']){
-				summary = formsConfig['edit-comment-prefix'] + ' '; 
-			}
-			else{
-				summary = ' Creating the idea ';
-			}
-			summary = summary + title + ' ';
-			if (formsConfig['edit-comment-suffix']){
-				summary = summary + formsConfig['edit-comment-suffix'];
-			}
-			api.post({
+						api.post({
 						'action': 'edit',
 						//Cleanup
 						'title': title,
-						'summary': 'Creating the idea '+ title,
+						'summary': that.createEditSummary(title),
 						'text': page,
 						'watchlist':'watch',
 						token: mw.user.tokens.get('editToken')
