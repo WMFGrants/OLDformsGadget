@@ -53,7 +53,7 @@ var formsGadget = {
 		$('#formsDialogExpand').html('');
 	},
 	'utilities' : {
-		'configPath' : 'User:Jeph_paul/formsGadgetConfig',
+		'configPath' : 'User:Jeph_paul/formsGadgetConfigBoth',
 		'getPageTitle': function(){
 			return true;
 		},
@@ -663,7 +663,7 @@ var formsGadget = {
 								}
 								else if(elem.attr('data-role')){
 									for (var i=0;i<elem.val(); i++){
-										infobox = that.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute')+i, null);
+										infobox = that.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute')+(i+1), null);
 									}
 								}
 								else{
@@ -969,7 +969,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 	$(function() {
 		(function(){
 			var namespace = mw.config.get('wgCanonicalNamespace');
-			var formsGadgetType = $('.wp-formsGadget-create').length ? 'create' : ( $('.wp-formsGadget-expand').length ? 'expand' : 0 );
+			var formsGadgetType = $('.wp-formsGadget-create').length || $('.wp-formsGadget-button').length ? 'create' : ( $('.wp-formsGadget-expand').length ? 'expand' : 0 );
 			if ( namespace == 'Grants' || namespace == 'User' ){
 				if(mw.config.get('wgPageContentLanguage') == 'en'){
 					var api = new mw.Api();
@@ -980,7 +980,6 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 						$('.wp-formsGadget-expand').show();
 						$('.wp-formsGadget-' + formsGadgetType).click(function(e){
 							e.preventDefault();
-							
 							formsGadget.cleanupDialog();
 							formsGadget.openDialog();
 							formsGadget.openPanel();
@@ -1050,7 +1049,8 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 									//Show post edi message
 									mw.notify(config['config']['post-edit'],{autoHide:false});
 								}
-							$('.wp-formsGadget-' + formsGadgetType ).click(function(e){
+								//Temp
+								$('.wp-formsGadget-button' ).click(function(e){
 																e.preventDefault();
 																formsGadget.openDialog();
 															});
