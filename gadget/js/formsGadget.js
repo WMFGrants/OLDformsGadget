@@ -654,7 +654,8 @@ var formsGadget = {
 					return { 'heading': heading, 'value': value};
 				});
 			}
-			
+			//Disabling buttons on ajax post 
+			$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
 			
 			//should not hard code '/Toolkit'
 			var title = mw.config.get('wgPageName').replace('/Toolkit','');
@@ -698,7 +699,7 @@ var formsGadget = {
 						for(entry in hiddenFields){
 							infobox = infobox.push({'param':hiddenFields[entry]['key'],'value':hiddenFields[entry]['value']});
 						}
-						modifiedSection = before + that.stringifyInfobox(infobox) + after;
+						modifiedSection = before + $.trim(that.stringifyInfobox(infobox)) + after;
 						var formsConfig = formsGadget.formDict['config'];
 						api.post({
 							'action' : 'edit',
@@ -806,7 +807,7 @@ var formsGadget = {
 			 */
 			
 			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
-			//Disabling buttons on ajox post 
+			//Disabling buttons on ajax post 
 			$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
 						api.post({
 						'action': 'edit',
