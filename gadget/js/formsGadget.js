@@ -98,17 +98,18 @@ var formsGadget = {
 			}
 			return dict;
 		},
-		'setPostEditFeedbackCookie' : function(value){
-			$.cookie(value,true,{'path':'/'});
+		'setPostEditFeedbackCookie' : function(key,value){
+			$.cookie(key, value, {'path':'/'});
 		},
 		/*
 		 * This function is used to check if a has been set by the above function 
 		 * to show the speech bubble on page reload
 		 */
-		'checkPostEditFeedbackCookie' : function(value){
-			if($.cookie(value)){
-				$.cookie(value,null,{'path':'/'});
-				return true;
+		'checkPostEditFeedbackCookie' : function(key){
+			var value = $.cookie(key);
+			if(value){
+				$.cookie(key, null, {'path':'/'});
+				return value;
 			}
 			else{
 				return false;
@@ -724,7 +725,7 @@ var formsGadget = {
 								console.log('Successfully Added new sections & modified the infobox');
 								//Cleanup
 								formsGadget.dialog.dialog('close');
-								formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify');
+								formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify','expand');
 								window.location.href = location.origin + '/wiki/' + title;
 							});
 						});
@@ -819,7 +820,7 @@ var formsGadget = {
 						token: mw.user.tokens.get('editToken')
 					}).then(function () {
 						//Creating Idea Toolkit
-						//var formsConfig = formsGadget.formDict['config'];
+						var formsConfig = formsGadget.formDict['config'];
 						var toolkit = formsConfig['toolkit-name'];
 						var toolkitContent = '{{' + formsConfig['toolkit-template'] + '}}';
 						var createToolkit = true;
@@ -842,7 +843,7 @@ var formsGadget = {
 						//Cleanup
 						$.when(createToolkit).then(function(){
 							formsGadget.dialog.dialog('close');
-							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetPageCreated');
+							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify','create');
 							window.location.href = location.origin + '/wiki/' + title;
 						},function(){
 							$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
@@ -1022,7 +1023,10 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 									
 									if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
 										//Show post edi message
-										mw.notify(config['config']['post-edit'],{autoHide:false});
+										//Clean up & modify
+										var editType = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+										var editNotification = utility.stripWhiteSpace(formsGadgetConfig[editType]['config']['post-edit']);
+										mw.notify(editNotification,{autoHide:false});
 									}
 								});
 							});									
@@ -1045,25 +1049,41 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 							
 															
 							$.when(jQuery.getScript(configUrl)).then(function(){
+								if(!(formsGadgetType in formsGadgetConfig)){
+									config = utility.stripWhiteSpace(formsGadgetConfig['create']);
+									//$('#formsDialogExpand .loading').hide();
+									if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
+										//Show post edi message
+										mw.notify(config['config']['post-edit'],{autoHide:false});
+									}
+									return;
+								}
+								
 								var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetType]);
-								$('#formsDialogExpand .loading').hide();
+								//$('#formsDialogExpand .loading').hide();
 								formsGadget['formDict'] = config;
 								//Dialog Title
 								$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
 								//Cleanup
 								formsGadget['wikiSectionTree'] = new formsGadget.tree();
 								formsGadget.openDialog();
+								$('#formsDialogExpand .loading').hide();
 								formsGadget.createForm(config);
 								formsGadget.type = formsGadgetType;
 								if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
 									//Show post edi message
-									mw.notify(config['config']['post-edit'],{autoHide:false});
+									//Show post edi message
+									//Clean up & modify
+									var editType = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+									var editNotification = utility.stripWhiteSpace(formsGadgetConfig[editType]['config']['post-edit']);
+									mw.notify(editNotification,{autoHide:false});
 								}
 								//Temp
 								$('.wp-formsGadget-button' ).click(function(e){
 																e.preventDefault();
 																formsGadget.openDialog();
 															});
+								
 							});
 						});
 					}
