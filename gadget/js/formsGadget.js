@@ -53,7 +53,7 @@ var formsGadget = {
 		$('#formsDialogExpand').html('');
 	},
 	'utilities' : {
-		'configPath' : 'User:Jeph_paul/formsGadgetConfigBoth',
+		'configPath' : 'Meta:FormWizard/Config',
 		'getPageTitle': function(){
 			return true;
 		},
@@ -723,9 +723,10 @@ var formsGadget = {
 							}).then(function(){
 								// Redirecting to idea page
 								console.log('Successfully Added new sections & modified the infobox');
+								var postEditMessage = formsGadget.formDict['config']['post-edit'];
 								//Cleanup
 								formsGadget.dialog.dialog('close');
-								formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify','expand');
+								formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify',postEditMessage);
 								window.location.href = location.origin + '/wiki/' + title;
 							});
 						});
@@ -843,7 +844,8 @@ var formsGadget = {
 						//Cleanup
 						$.when(createToolkit).then(function(){
 							formsGadget.dialog.dialog('close');
-							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify','create');
+							var postEditMessage = formsGadget.formDict['config']['post-edit'];
+							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify',postEditMessage);
 							window.location.href = location.origin + '/wiki/' + title;
 						},function(){
 							$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
@@ -980,16 +982,17 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 	$(function() {
 		(function(){
 			var namespace = mw.config.get('wgCanonicalNamespace');
-			var formsGadgetType = $('.wp-formsGadget-create').length || $('.wp-formsGadget-button').length ? 'create' : ( $('.wp-formsGadget-expand').length ? 'expand' : 0 );
+			var formsGadgetMode = $('.wp-formsGadget').attr('data-mode');
+			var formsGadgetType = $('.wp-formsGadget').attr('data-type');
 			if ( namespace == 'Grants' || namespace == 'User' ){
-				if(mw.config.get('wgPageContentLanguage') == 'en'){
+
 					var api = new mw.Api();
 					var utility = formsGadget.utilities;
 					//Cleanup
-					if (formsGadgetType == 'expand'){
+					if (formsGadgetMode == 'expand'){
 						//Temporarily showing button for testing
-						$('.wp-formsGadget-expand').show();
-						$('.wp-formsGadget-' + formsGadgetType).click(function(e){
+						
+						$('.wp-formsGadget').click(function(e){
 							e.preventDefault();
 							formsGadget.cleanupDialog();
 							formsGadget.openDialog();
@@ -997,69 +1000,54 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 							
 							$('#formsDialogExpand .loading').show();
 							
-							var grantType = $(this).attr('data-grantType');
 							
-							var configFullPath = utility.configPath+'/'+grantType+'/'+utility.contentLanguage();
+							var configFullPath = utility.configPath+'/'+formsGadgetType;
 							
-							api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
-								for (id in data.query.pages){
-										if (id == -1){
-											configFullPath = utility.configPath+'/'+grantType+'/en';
-										}
-								}
+							
 								var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
 										//Get the config for the detected language
 								$.when(jQuery.getScript(configUrl)).then(function(){
-									var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetType]);
+									var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetMode]);
 									formsGadget['formDict'] = config;
 									//Cleanup
 									$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
 									formsGadget['wikiSectionTree'] = new formsGadget.tree();
 									formsGadget.openDialog();
 									formsGadget.createForm(config);
-									formsGadget.type = formsGadgetType;
+									formsGadget.type = formsGadgetMode;
 									formsGadget.openDialog();
 									$('#formsDialogExpand .loading').hide();
 									
-									if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
+									var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+									
+									//Show post edi message
+									//Clean up & modify
+									if(postEditMessage){
 										//Show post edi message
-										//Clean up & modify
-										var editType = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
-										var editNotification = utility.stripWhiteSpace(formsGadgetConfig[editType]['config']['post-edit']);
-										mw.notify(editNotification,{autoHide:false});
+										mw.notify(postEditMessage,{autoHide:false});
 									}
 								});
 							});									
-						});	
+						
 					}
 					else{
-						var grantType = utility.grantType();
-						var configFullPath = utility.configPath+'/'+grantType+'/'+utility.userLanguage();
+						var configFullPath = utility.configPath+'/'+formsGadgetType;
 						
-						api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
-							for (id in data.query.pages){
-									if (id == -1){
-										configFullPath = utility.configPath+'/'+grantType+'/en';
-									}
-							}
-							var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
-									//Get the config for the detected language
-									
-							//Adding the loading for the dialog
-							
-															
+							var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';															
 							$.when(jQuery.getScript(configUrl)).then(function(){
-								if(!(formsGadgetType in formsGadgetConfig)){
+								if(typeof formsGadgetConfig !== 'undefined'){
+									if(!(formsGadgetMode in formsGadgetConfig)){
 									config = utility.stripWhiteSpace(formsGadgetConfig['create']);
 									//$('#formsDialogExpand .loading').hide();
-									if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
+									var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+									if(postEditMessage){
 										//Show post edi message
-										mw.notify(config['config']['post-edit'],{autoHide:false});
+										mw.notify(postEditMessage,{autoHide:false});
 									}
 									return;
 								}
 								
-								var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetType]);
+								var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetMode]);
 								//$('#formsDialogExpand .loading').hide();
 								formsGadget['formDict'] = config;
 								//Dialog Title
@@ -1069,29 +1057,22 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 								formsGadget.openDialog();
 								$('#formsDialogExpand .loading').hide();
 								formsGadget.createForm(config);
-								formsGadget.type = formsGadgetType;
-								if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
+								formsGadget.type = formsGadgetMode;
+								var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+								if(postEditMessage){
 									//Show post edi message
-									//Show post edi message
-									//Clean up & modify
-									var editType = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
-									var editNotification = utility.stripWhiteSpace(formsGadgetConfig[editType]['config']['post-edit']);
-									mw.notify(editNotification,{autoHide:false});
+									mw.notify(postEditMessage,{autoHide:false});
 								}
 								//Temp
 								$('.wp-formsGadget-button' ).click(function(e){
 																e.preventDefault();
 																formsGadget.openDialog();
 															});
+								}
 								
-							});
-						});
-					}
+								
+				});
 				}
-				else{
-
-					$('.wp-formsGadget-' + formsGadgetType).hide();
-				}	
 			}
 		})();
 	});
