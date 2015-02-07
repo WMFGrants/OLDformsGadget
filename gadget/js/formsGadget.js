@@ -987,8 +987,8 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 			if ( true ){
 				var api = new mw.Api();
 				var utility = formsGadget.utilities;
-				//Cleanup
-				//Temporarily showing button for testing		
+				//Showing Post edit feedback if any
+				formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');	
 				$('.wp-formsGadget').click(function(e){
 					e.preventDefault();
 					
