@@ -53,7 +53,7 @@ var formsGadget = {
 		$('#formsDialogExpand').html('');
 	},
 	'utilities' : {
-		'configPath' : 'Meta:FormWizard/Config',
+		'configPath' : 'Wikipedia:Co-op/Config/Co-op',
 		'getPageTitle': function(){
 			return true;
 		},
@@ -160,7 +160,7 @@ var formsGadget = {
 		},
 		'checkTitle' : function(string,exists,titleStem,type){
 			var that = this;
-			var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
+			var apiUrl = 'https://test.wikipedia.org/w/api.php?callback=?';
 			var title = titleStem + string;
 			var searchDict = {
 					'action':'query',
@@ -302,7 +302,7 @@ var formsGadget = {
 		 					if (that.found){
 		 						$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
 			 					if(typeof(callback) === 'function' && that.found){
-			 						var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
+			 						var apiUrl = 'https://test.wikipedia.org/w/api.php?callback=?';
 			 						$.getJSON(apiUrl,{'action':'parse',
 			 									'format':'json',
 			 									'text':'[['+enteredString+']]'
@@ -538,8 +538,8 @@ var formsGadget = {
 		},
 		'infoboxString': '',
 		'remainingSectionString': '',
-		'extractInfobox' : function(markup){
-			var startIndex = markup.indexOf('{{Probox');
+		'extractInfobox' : function(markup, infoboxTemplate){
+			var startIndex = markup.indexOf('{{' + infoboxTemplate);
 			var counter = 0;
 			var endIndex = 0;
 			for (i=startIndex;i<markup.length;i++){ 
@@ -668,7 +668,8 @@ var formsGadget = {
 						'page': title,
 						'section': 0
 					}).then(function(result){
-						var elements = that.extractInfobox(result.parse.wikitext['*']);
+						var infoboxTemplate = formsGadget.formDict.config['infobox'] ? formsGadget.formDict.config['infobox'] : 'Probox/Idealab';
+						var elements = that.extractInfobox(result.parse.wikitext['*'], infoboxTemplate);
 						var infobox = that.infoboxObjectify(elements['infobox']);
 						var before = elements['before'];
 						var after = elements['after'];
@@ -982,9 +983,10 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 	$(function() {
 		(function(){
 			var namespace = mw.config.get('wgCanonicalNamespace');
-			var formsGadgetMode = $('.wp-formsGadget').attr('data-mode');
-			var formsGadgetType = $('.wp-formsGadget').attr('data-type');
-			if ( namespace == 'Grants' || namespace == 'User' ){
+			var formsGadgetMode = $('.wp-formsGadget').attr('data-mode') || 'create';
+			var formsGadgetType = $('.wp-formsGadget').attr('data-type') || 'Idea';
+			//Temporarily removing namespace check
+			if ( true ){
 
 					var api = new mw.Api();
 					var utility = formsGadget.utilities;
@@ -994,51 +996,46 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 						
 						$('.wp-formsGadget').click(function(e){
 							e.preventDefault();
+							formsGadgetType = $(this).attr('data-type') || 'Idea';
 							formsGadget.cleanupDialog();
 							formsGadget.openDialog();
 							formsGadget.openPanel();
 							
 							$('#formsDialogExpand .loading').show();
 							
-							
 							var configFullPath = utility.configPath+'/'+formsGadgetType;
-							
-							
-								var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
-										//Get the config for the detected language
-								$.when(jQuery.getScript(configUrl)).then(function(){
-									var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetMode]);
-									formsGadget['formDict'] = config;
-									//Cleanup
-									$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
-									formsGadget['wikiSectionTree'] = new formsGadget.tree();
-									formsGadget.openDialog();
-									formsGadget.createForm(config);
-									formsGadget.type = formsGadgetMode;
-									formsGadget.openDialog();
-									$('#formsDialogExpand .loading').hide();
-									
-									var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
-									
+							var configUrl = 'https://test.wikipedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
+							//Get the config for the detected language
+							$.when(jQuery.getScript(configUrl)).then(function(){
+								var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetMode]);
+								formsGadget['formDict'] = config;
+								//Cleanup
+								$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
+								formsGadget['wikiSectionTree'] = new formsGadget.tree();
+								formsGadget.openDialog();
+								formsGadget.createForm(config);
+								formsGadget.type = formsGadgetMode;
+								formsGadget.openDialog();
+								$('#formsDialogExpand .loading').hide();
+								
+								var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+								
+								//Show post edi message
+								//Clean up & modify
+								if(postEditMessage){
 									//Show post edi message
-									//Clean up & modify
-									if(postEditMessage){
-										//Show post edi message
-										mw.notify(postEditMessage,{autoHide:false});
-									}
-								});
-							});									
-						
+									mw.notify(postEditMessage,{autoHide:false});
+								}
+							});
+						});									
 					}
 					else{
-						var configFullPath = utility.configPath+'/'+formsGadgetType;
-						
-							var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';															
+							var configFullPath = utility.configPath+'/'+formsGadgetType;
+							var configUrl = 'https://test.wikipedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';															
 							$.when(jQuery.getScript(configUrl)).then(function(){
 								if(typeof formsGadgetConfig !== 'undefined'){
 									if(!(formsGadgetMode in formsGadgetConfig)){
 									config = utility.stripWhiteSpace(formsGadgetConfig['create']);
-									//$('#formsDialogExpand .loading').hide();
 									var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
 									if(postEditMessage){
 										//Show post edi message
@@ -1064,7 +1061,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 									mw.notify(postEditMessage,{autoHide:false});
 								}
 								//Temp
-								$('.wp-formsGadget-button' ).click(function(e){
+								$('.wp-formsGadget' ).click(function(e){
 																e.preventDefault();
 																formsGadget.openDialog();
 															});
