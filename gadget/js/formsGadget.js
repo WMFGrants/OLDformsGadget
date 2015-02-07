@@ -988,7 +988,12 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 				var api = new mw.Api();
 				var utility = formsGadget.utilities;
 				//Showing Post edit feedback if any
-				formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');	
+				var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+               	//Show post edit message
+               	if(postEditMessage){
+					mw.notify(postEditMessage,{autoHide:false});
+               	}
+
 				$('.wp-formsGadget').click(function(e){
 					e.preventDefault();
 					
@@ -1015,18 +1020,9 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 						formsGadget.type = formsGadgetMode;
 						formsGadget.openDialog();
 						$('#formsDialogExpand .loading').hide();
-						
-						var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
-						
-						//Show post edit message
-						//Clean up & modify
-						if(postEditMessage){
-							//Show post edi message
-							mw.notify(postEditMessage,{autoHide:false});
-						}
 					});
 				});
 			}
-		});
-	})();
+		})();
+	});
 });
