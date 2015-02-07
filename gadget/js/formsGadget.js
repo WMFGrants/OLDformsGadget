@@ -676,7 +676,7 @@ var formsGadget = {
 							var elem = $(elem);
 							if(elem.attr('data-add-to') == 'infobox' ){
 								if(elem.attr('type') == 'checkbox'){
-									if (elem.attr('checked')){
+									if (elem.is(':checked')){
 										infobox = that.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute'),elem.val());
 									}
 									else{
