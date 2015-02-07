@@ -770,7 +770,7 @@ var formsGadget = {
 						}	
 					}
 					else if(elem.attr('type') == 'checkbox'){
-						if (elem.attr('checked')){
+						if (elem.is(':checked')){
 							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
 						}
 						else{
