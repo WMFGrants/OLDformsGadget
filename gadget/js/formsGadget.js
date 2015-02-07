@@ -983,94 +983,50 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 	$(function() {
 		(function(){
 			var namespace = mw.config.get('wgCanonicalNamespace');
-			var formsGadgetMode = $('.wp-formsGadget').attr('data-mode') || 'create';
-			var formsGadgetType = $('.wp-formsGadget').attr('data-type') || 'Idea';
 			//Temporarily removing namespace check
 			if ( true ){
-
-					var api = new mw.Api();
-					var utility = formsGadget.utilities;
-					//Cleanup
-					if (formsGadgetMode == 'expand'){
-						//Temporarily showing button for testing
+				var api = new mw.Api();
+				var utility = formsGadget.utilities;
+				//Cleanup
+				//Temporarily showing button for testing		
+				$('.wp-formsGadget').click(function(e){
+					e.preventDefault();
+					
+					formsGadgetType = $(this).attr('data-type') || 'Idea';
+					formsGadgetMode = $(this).attr('data-mode') || 'create';
+					
+					formsGadget.cleanupDialog();
+					formsGadget.openDialog();
+					formsGadget.openPanel();
+					
+					$('#formsDialogExpand .loading').show();
+					
+					var configFullPath = utility.configPath+'/'+formsGadgetType;
+					var configUrl = 'https://test.wikipedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
+					//Get the config for the detected language
+					$.when(jQuery.getScript(configUrl)).then(function(){
+						var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetMode]);
+						formsGadget['formDict'] = config;
+						//Cleanup
+						$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
+						formsGadget['wikiSectionTree'] = new formsGadget.tree();
+						formsGadget.openDialog();
+						formsGadget.createForm(config);
+						formsGadget.type = formsGadgetMode;
+						formsGadget.openDialog();
+						$('#formsDialogExpand .loading').hide();
 						
-						$('.wp-formsGadget').click(function(e){
-							e.preventDefault();
-							formsGadgetType = $(this).attr('data-type') || 'Idea';
-							formsGadget.cleanupDialog();
-							formsGadget.openDialog();
-							formsGadget.openPanel();
-							
-							$('#formsDialogExpand .loading').show();
-							
-							var configFullPath = utility.configPath+'/'+formsGadgetType;
-							var configUrl = 'https://test.wikipedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
-							//Get the config for the detected language
-							$.when(jQuery.getScript(configUrl)).then(function(){
-								var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetMode]);
-								formsGadget['formDict'] = config;
-								//Cleanup
-								$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
-								formsGadget['wikiSectionTree'] = new formsGadget.tree();
-								formsGadget.openDialog();
-								formsGadget.createForm(config);
-								formsGadget.type = formsGadgetMode;
-								formsGadget.openDialog();
-								$('#formsDialogExpand .loading').hide();
-								
-								var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
-								
-								//Show post edi message
-								//Clean up & modify
-								if(postEditMessage){
-									//Show post edi message
-									mw.notify(postEditMessage,{autoHide:false});
-								}
-							});
-						});									
-					}
-					else{
-							var configFullPath = utility.configPath+'/'+formsGadgetType;
-							var configUrl = 'https://test.wikipedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';															
-							$.when(jQuery.getScript(configUrl)).then(function(){
-								if(typeof formsGadgetConfig !== 'undefined'){
-									if(!(formsGadgetMode in formsGadgetConfig)){
-									config = utility.stripWhiteSpace(formsGadgetConfig['create']);
-									var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
-									if(postEditMessage){
-										//Show post edi message
-										mw.notify(postEditMessage,{autoHide:false});
-									}
-									return;
-								}
-								
-								var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetMode]);
-								//$('#formsDialogExpand .loading').hide();
-								formsGadget['formDict'] = config;
-								//Dialog Title
-								$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
-								//Cleanup
-								formsGadget['wikiSectionTree'] = new formsGadget.tree();
-								formsGadget.openDialog();
-								$('#formsDialogExpand .loading').hide();
-								formsGadget.createForm(config);
-								formsGadget.type = formsGadgetMode;
-								var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
-								if(postEditMessage){
-									//Show post edi message
-									mw.notify(postEditMessage,{autoHide:false});
-								}
-								//Temp
-								$('.wp-formsGadget' ).click(function(e){
-																e.preventDefault();
-																formsGadget.openDialog();
-															});
-								}
-								
-								
+						var postEditMessage = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+						
+						//Show post edit message
+						//Clean up & modify
+						if(postEditMessage){
+							//Show post edi message
+							mw.notify(postEditMessage,{autoHide:false});
+						}
+					});
 				});
-				}
 			}
-		})();
-	});
+		});
+	})();
 });
