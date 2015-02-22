@@ -24,13 +24,13 @@ var formsGadget = {
 							resizable: false,
 							draggable: false,
 					};
-		if($('#formsDialogExpand').length){
-			this.dialog = $('#formsDialogExpand').dialog(dialogDict);
+		if($('#formsDialog').length){
+			this.dialog = $('#formsDialog').dialog(dialogDict);
 		}
 		else{
 			this.dialog = $('<div id="formsDialogExpand"></div>').dialog(dialogDict);
 		}
-		$('#formsDialogExpand').append('<div class="loading"></div>');
+		$('#formsDialog').append('<div class="loading"></div>');
 			
 	},
 	'dialog' : null,
@@ -50,7 +50,7 @@ var formsGadget = {
 			this.dialog.dialog('destroy');	
 		}
 		this.dialog = null;
-		$('#formsDialogExpand').html('');
+		$('#formsDialog').html('');
 	},
 	'utilities' : {
 		'configPath' : 'Wikipedia:Co-op/Config/Co-op',
@@ -283,7 +283,7 @@ var formsGadget = {
 	 			var inputTextBox = this;
 	 			var enteredString = $(this).val();
 	 			if(!enteredString && !dict['mandatory']){
-	 				$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
+	 				$('#formsDialog [elemType="button"]').trigger('enableButtons');
 	 				$(inputTextBox).parent().removeClass('entrySatisfying entryNotSatisfying');
 	 				that.timestamp = Date.now();
 	 				that.found = true;
@@ -300,7 +300,7 @@ var formsGadget = {
 		 					$(inputTextBox).parent().removeClass('entrySatisfying entryNotSatisfying');
 		 					$(inputTextBox).parent().addClass(that.found ? 'entrySatisfying' : 'entryNotSatisfying');
 		 					if (that.found){
-		 						$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
+		 						$('#formsDialog [elemType="button"]').trigger('enableButtons');
 			 					if(typeof(callback) === 'function' && that.found){
 			 						var apiUrl = 'https://test.wikipedia.org/w/api.php?callback=?';
 			 						$.getJSON(apiUrl,{'action':'parse',
@@ -316,7 +316,7 @@ var formsGadget = {
 			 					}
 		 					}
 		 					else{
-		 						$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
+		 						$('#formsDialog [elemType="button"]').trigger('disableButtons');
 		 					} 
 		 				});
 	 				}	
@@ -489,8 +489,8 @@ var formsGadget = {
 			var button = this.button('next',dict['title']);
 			var that = this;
 			button.onclick = function(){
-				$('#formsDialogExpand [step]').hide();
-				$('#formsDialogExpand'+' #'+dict['step']).next().show();
+				$('#formsDialog [step]').hide();
+				$('#formsDialog'+' #'+dict['step']).next().show();
 			};
 			return button;
 		},
@@ -498,15 +498,15 @@ var formsGadget = {
 			var button = this.button('back',dict['title']);
 			var that = this;
 			button.onclick = function(){
-				$('#formsDialogExpand [step]').hide();
-				$('#formsDialogExpand'+' #'+dict['step']).prev().show();
+				$('#formsDialog [step]').hide();
+				$('#formsDialog'+' #'+dict['step']).prev().show();
 			};
 			return button;
 		},
 		'validateForm': function(){
 			var counter = 0;
 			var firstElem;
-			$('#formsDialogExpand [data-mandatory="true"]').each(function(){
+			$('#formsDialog [data-mandatory="true"]').each(function(){
 				var elem = $(this);
 				if(!elem.val()){
 					if (counter == 0){
@@ -518,7 +518,7 @@ var formsGadget = {
 			});
 			//Add mandatory filed Event & styling
 			if(firstElem){
-				$('#formsDialogExpand [step]').hide();
+				$('#formsDialog [step]').hide();
 				while(true){
 					if (firstElem.attr('step')){
 						firstElem.show();
@@ -649,14 +649,14 @@ var formsGadget = {
 			for (elem in roots){
 				console.log('---------');
 				this.wikiSectionTree.traverse([roots[elem]],1,function(id){
-					var elem = $('#formsDialogExpand #'+id);
+					var elem = $('#formsDialog #'+id);
 					value = elem.val() ? elem.val() : '';
 					var heading = elem.attr('data-add-to-attribute');
 					return { 'heading': heading, 'value': value};
 				});
 			}
 			//Disabling buttons on ajax post 
-			$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
+			$('#formsDialog [elemType="button"]').trigger('disableButtons');
 			
 			//should not hard code '/Toolkit'
 			var title = mw.config.get('wgPageName').replace('/Toolkit','');
@@ -673,7 +673,7 @@ var formsGadget = {
 						var infobox = that.infoboxObjectify(elements['infobox']);
 						var before = elements['before'];
 						var after = elements['after'];
-						$('#formsDialogExpand [data-add-to]').each(function(index,elem){
+						$('#formsDialog [data-add-to]').each(function(index,elem){
 							var elem = $(elem);
 							if(elem.attr('data-add-to') == 'infobox' ){
 								if(elem.attr('type') == 'checkbox'){
@@ -740,14 +740,14 @@ var formsGadget = {
 			var infobox = '';
 			var page = '';
 			var api = new mw.Api();
-			var pageTitle = $('#formsDialogExpand [page-title]').val();
+			var pageTitle = $('#formsDialog [page-title]').val();
 			
 			var roots = this.wikiSectionTree.roots;
 			
 			for (elem in roots){
 				console.log('---------');
 				this.wikiSectionTree.traverse([roots[elem]],1,function(id){
-					var elem = $('#formsDialogExpand #'+id);
+					var elem = $('#formsDialog #'+id);
 					value = elem.val() ? elem.val() : '';
 					var heading = elem.attr('data-add-to-attribute');
 					var comment = elem.attr('data-comment');
@@ -755,7 +755,7 @@ var formsGadget = {
 				});
 			}
 			
-			$('#formsDialogExpand [data-add-to]').each(function(index,elem){
+			$('#formsDialog [data-add-to]').each(function(index,elem){
 				var elem = $(elem);
 				if(elem.attr('data-add-to') == 'section' ){
 					//var value = elem.val() ? elem.val() : '';
@@ -811,7 +811,7 @@ var formsGadget = {
 			
 			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
 			//Disabling buttons on ajax post 
-			$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
+			$('#formsDialog [elemType="button"]').trigger('disableButtons');
 						api.post({
 						'action': 'edit',
 						//Cleanup
@@ -849,10 +849,10 @@ var formsGadget = {
 							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify',postEditMessage);
 							window.location.href = location.origin + '/wiki/' + title;
 						},function(){
-							$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
+							$('#formsDialog [elemType="button"]').trigger('enableButtons');
 						});
 					},function(){
-						$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
+						$('#formsDialog [elemType="button"]').trigger('enableButtons');
 					});
 			
 			console.log(title,page);
@@ -908,7 +908,7 @@ var formsGadget = {
 				dialogInternal.appendChild(panel);
 			}
 		}
-		$('#formsDialogExpand').append(dialogInternal);
+		$('#formsDialog').append(dialogInternal);
 		$('.formsGadget .dropdown').chosen({
 								disable_search: true,
 								width: '50%',
@@ -1004,7 +1004,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 					formsGadget.openDialog();
 					formsGadget.openPanel();
 					
-					$('#formsDialogExpand .loading').show();
+					$('#formsDialog .loading').show();
 					
 					
 					var grantType = utility.grantType();
@@ -1029,7 +1029,7 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 							formsGadget.createForm(config);
 							formsGadget.type = formsGadgetMode;
 							formsGadget.openDialog();
-							$('#formsDialogExpand .loading').hide();
+							$('#formsDialog .loading').hide();
 						});
 					});
 				});
