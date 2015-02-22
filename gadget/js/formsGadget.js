@@ -1006,20 +1006,31 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 					
 					$('#formsDialogExpand .loading').show();
 					
-					var configFullPath = utility.configPath+'/'+formsGadgetType;
-					var configUrl = 'https://test.wikipedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
-					//Get the config for the detected language
-					$.when(jQuery.getScript(configUrl)).then(function(){
-						var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetMode]);
-						formsGadget['formDict'] = config;
-						//Cleanup
-						$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
-						formsGadget['wikiSectionTree'] = new formsGadget.tree();
-						formsGadget.openDialog();
-						formsGadget.createForm(config);
-						formsGadget.type = formsGadgetMode;
-						formsGadget.openDialog();
-						$('#formsDialogExpand .loading').hide();
+					
+					var grantType = utility.grantType();
+					var configFullPath = utility.configPath+'/'+grantType+'/'+utility.userLanguage();
+					
+					api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
+						for (id in data.query.pages){
+								if (id == -1){
+									configFullPath = utility.configPath+'/'+grantType+'/en';
+								}
+						}
+						var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
+						//Get the config for the detected language
+
+						$.when(jQuery.getScript(configUrl)).then(function(){
+							var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetMode]);
+							formsGadget['formDict'] = config;
+							//Cleanup
+							$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
+							formsGadget['wikiSectionTree'] = new formsGadget.tree();
+							formsGadget.openDialog();
+							formsGadget.createForm(config);
+							formsGadget.type = formsGadgetMode;
+							formsGadget.openDialog();
+							$('#formsDialogExpand .loading').hide();
+						});
 					});
 				});
 			}
