@@ -1,52 +1,43 @@
-//<languages/>
-/*  IdeaLab - new idea form wizard configuration file  */
-var formsGadgetConfig = {
+var formsGadgetConfig =  {
+	"create": {
   			"config":{
-  					"post-edit": "<translate>
-<!--T:2-->
-Thank you for creating your idea! Visit the toolkit page (linked below the infobox) to expand your idea further.</translate>",
+  					"post-edit": "Thank you for creating your page! Please continue to develop your proposal by filling in the remaining sections below. Once you feel your proposal is complete and ready for review, update the status to PROPOSED (status=PROPOSED in the infobox markup).",
   					"new-page": true,
   					"namespace": "Grants",
-  					"portal-page": "IdeaLab",
+  					"portal-page": "IEG",
   					"page-template": "",
   					"infobox": "Probox",
   					"talkpage-template": "",
-                    "page-home": "Grants:IdeaLab",
-                    "dialog-title": "<translate>
-<!--T:3-->
-Let's create your idea!</translate>",
-                    "toolkit-name": "Toolkit",
-                    "toolkit-template": "subst:Grants:IdeaLab/Build/Idea_toolkit",
-                    "error-not-logged-in": "<translate>
-<!--T:4-->
-Not logged in.</translate>"
-					"edit-comment-prefix": "<translate>
-					Created a </translate>",
-					"edit-comment-suffix": "<translate>
-					Using this tool</translate>"
+                    "page-home": "Grants:IEG",
+                    "dialog-title": "Create your IEG proposal.",
+                    "toolkit-name": "",
+                    "toolkit-template": "",
+                    "error-not-logged-in": "Please login first before continuing :)",
+                    "edit-comment-prefix": "Creating a new IEG proposal ",
+                    "edit-comment-suffix": " (edited with [[Meta:FormWizard|FormWizard]])",
   			},
   			"step-1":{
+				"introText": {
+					"type": "text",
+					"string": "Don't worry about getting all your answers perfect in this form, you can add and make changes to your page after creating your first draft!",
+					},
   					"projectNameTextbox": {
   							"type": "smallTextBox",
-  							"placeholder": "<translate>
-<!--T:5-->
-What should we call your idea?</translate>",
-  							"title": "<translate>
-<!--T:6-->
-Idea title</translate>",
+  							"placeholder": "example: Social media outreach in China",
+  							"title": "Proposal title",
+                            "text-1": "What is the name of your project? This will become the title of your proposal page.",
   							"characterLength":100,
   							"mandatory":true,
   							"add-to": "infobox",
   							"infobox-param":"project",
   							"validate": "doesNotExists",
-                            "page-title":true
+                            "page-title":true,
   						},
   					"projectSummaryTextbox": {
   							"type": "largeTextBox",
-  							"placeholder": "<translate>
-<!--T:7-->
-Briefly summarize your idea in one sentence</translate>",
+  							"placeholder": "",
   							"title": "Summary",
+                            "text-1": "Please briefly summarize your project in one sentence",
   							"characterLength":300,
   							"mandatory": true,
   							"add-to": "infobox",
@@ -55,125 +46,406 @@ Briefly summarize your idea in one sentence</translate>",
   					"projectIdeaSection": {
   							"type": "largeTextBox",
   							"placeholder": "leave this blank!",
-  							"title": "<translate>
-<!--T:8-->
-This is the 'project idea' section header</translate>",
+  							"title": "leave this blank!",
   							"characterLength":1000,
   							"section": "Project idea",
-  							"mandatory": "false",
+  							"mandatory": false,
   							"add-to": "section",
 				            "visibility": "hidden",
-					        "section-header": "Project idea"
+					        "section-header": "Project idea",
+					        "comment": "{{TOC_right}} <!--Please leave this here and continue to the next section-->",
   						},
-                         "projectGoalsSection": {
-  							"type": "largeTextBox",
-  							"placeholder": "leave this blank!",
-  							"title": "<translate>
-                                                        <!--T:9-->
-This is the 'project idea' section header</translate>",
-  							"characterLength":1000,
-  							"section": "Goals",
-  							"mandatory": "false",
-  							"add-to": "section",
-                            "visibility": "hidden",
-  							"section-header": "Goals",
-                            "value": "",
-                            "comment": "<!--In this section: briefly explain what are you trying to accomplish with this project, or what do you expect will change as a result of this idea.-->"
-  						}, 
-  					"getInvolvedSection": {
-  							"type": "largeTextBox",
-  							"placeholder": "leave this blank!",
-  							"title": "<translate>
-<!--T:10-->
-This is the 'get involved' section header</translate>",
-  							"characterLength":1000,
-  							"section": "Project idea",
-  							"mandatory": "false",
-  							"add-to": "section",
-                            "visibility": "hidden",
-  							"section-header": "Get Involved",
-                            "value": "",
-                            "comment" :"<!--In this section: volunteers are welcome to join or endorse - using the buttons in the infobox is the easiest way to add yourself to this section!.-->",
-  						}, 
-                       "participantsSection": {
-  							"type": "largeTextBox",
-  							"placeholder": "leave this blank!",
-  							"title": "<translate>
-<!--T:11-->
-This is the 'participants' section header</translate>",
-  							"characterLength":1000,
-  							"section": "Participants",
-  							"mandatory": "false",
-  							"add-to": "section",
-                            "visibility": "hidden",
-  							"section-header": "Participants",
-  							"parent" : "getInvolvedSection",
-                            "value": "",
-                            "comment": "<!-- Want to join this idea? Add your name by clicking the button in the infobox, or edit this section directly. -->",
-  						},    	
-                       "endorsementsSection": {
-  							"type": "largeTextBox",
-  							"placeholder": "leave this blank!",
-  							"title": "<translate>
-<!--T:12-->
-This is the 'endorsements' section header</translate>",
-  							"characterLength":1000,
-  							"section": "Endorsements",
-  							"mandatory": "false",
-  							"add-to": "section",
-                            "visibility": "hidden",
-  							"section-header": "Endorsements",
-                            "parent" : "getInvolvedSection",
-                            "value": "",
-                            "comment": "<!-- Want to endorse this as a good idea? Add your name by clicking the button in the infobox, or edit this section directly. -->"
-  						},     												  						
-  					"projectProblemSolvedTextbox": {
-  							"type": "largeTextBox",
-  							"placeholder": "Explain the issue you want to address with this idea",
-  							"title": "<translate>
-<!--T:13-->
-What is the problem you're trying to solve?</translate>",
-  							"characterLength":2000,
-  							"section": "What is the problem you're trying to solve?",
-  							"mandatory": false,
-  							"add-to": "section",
-  							"parent" : "projectIdeaSection",
-  							"section-header": "What is the problem you're trying to solve?"
-  						},
-  					"projectSolutionTextbox": {
-  							"type": "largeTextBox",
-  							"placeholder": "Explain how your idea might address the issue",
-  							"title": "<translate>
-<!--T:14-->
-What is your solution?</translate>",
-  							"characterLength":2000,
-  							"section": "What is your solution?",
-  							"mandatory": false,
-  							"add-to": "section",
-							"parent" : "projectIdeaSection", 							
-  							"section-header": "What is your solution?",
-"comment": "{{TOC_right}}",
-  						},
+						"projectProblemSolvedTextbox": {
+								"type": "largeTextBox",
+								"placeholder": "What problem are you trying to solve?",
+								"title": "Project idea",
+								"text-1": "Think of your project as an experiment - explain the overall problem you see and your idea for a solution that your project aims to test.",
+								"characterLength":2000,
+								"section": "What is the problem you're trying to solve?",
+								"mandatory": false,
+								"add-to": "section",
+								"parent" : "projectIdeaSection",
+								"section-header": "What is the problem you're trying to solve?",
+							},
+						"projectSolutionTextbox": {
+								"type": "largeTextBox",
+								"placeholder": "What is your proposed solution?",
+								"title": "",
+								"characterLength":2000,
+								"section": "What is your solution?",
+								"mandatory": false,
+								"add-to": "section",
+								"parent" : "projectIdeaSection",
+								"section-header": "What is your solution?",
+								"comment": "",
+							},
                     "nextButton":{
   							"type":"nextButton",
-  							"title":"<translate>
-<!--T:15-->
-Next</translate>"
+  							"title":"Next",
   						},
   					"cancelButton":{
   							"type": "cancelButton",
-  							"title":"<translate>
-<!--T:16-->
-Cancel</translate>"
+  							"title":"Cancel",
   						},
   				},
-  				"step-2":{
+  			"step-2":{
+  					"projectTargetTextbox": {
+  							"type": "smallTextBox",
+  							"placeholder": "example: Italian and Spanish Wikisource",
+  							"title": "Target project",
+                            "text-1": "Which existing Wikimedia projects and language versions will be better served or impacted as a result of this project?",
+  							"characterLength":100,
+  							"mandatory": true,
+  							"add-to": "infobox",
+  							"infobox-param":"target",
+  							"comment" :"<!--Which languages or Wikimedia projects will be better served or impacted as a result of this project? Example: Italian Wikisource.-->",
+  						},
+ 					"strategicPriorityDropdown": {
+  							"type": "dropdownList",
+  							"title": "Strategic priority",
+  							"placeholder": "select...",
+                            "text-1": "Please select the Wikimedia strategic priority that your project activities focus most on. Are you aiming to get more contributors (increase participation) or more readers (increase reach)? Or is the main focus on content (improve quality)?",
+  							"characterLength":100,
+  							"mandatory": true,
+  							"add-to": "infobox",
+  							"infobox-param":"goal",
+  							"values": ["Increase participation", "Increase reach","Improve quality", "I'm not sure",],
+  						},
+  					"strategicPriorityLink": {
+  							"type": "link",
+  							"href": "https://strategy.wikimedia.org/wiki/Wikimedia_Movement_Strategic_Plan_Summary#Contents",
+  							"link": "Read more about Wikimedia strategic priorities",
+  						},
+					 "projectGoalsSection": {
+						"type": "largeTextBox",
+						"placeholder": "example: *Encourage more women to become regular contributors to Wikipedia",
+						"title": "Project goals",
+						"text-1" : "Please briefly explain what are you trying to accomplish with this project, or what do you expect will change as a result of this grant.",
+						"characterLength":1000,
+						"section": "Project goals",
+						"mandatory": false,
+						"add-to": "section",
+						"section-header": "Project goals",
+						"value": "",
+						"comment": "<!-- What are the primary goal of your project? Please briefly explain what are you trying to accomplish with this project, or what do you expect will change as a result of this grant-->",
+  						},
+                    "nextButton":{
+  							"type":"nextButton",
+  							"title":"Next",
+  						},
+					"backButton":{
+  							"type":"backButton",
+  							"title":"Back",
+  						},
+  				},
+  				"step-3":{
+  				"projectPlanSection": {
+						"type": "largeTextBox",
+						"placeholder": "leave this blank!",
+						"title": "leave this blank!",
+						"characterLength":1000,
+						"section": "Project plan",
+						"mandatory": false,
+						"add-to": "section",
+						"visibility": "hidden",
+						"section-header": "Project plan",
+						"value": "",
+						"comment": "<!--Leave this section blank -->",
+  						},
+						"projectActivitiesSection": {
+								"type": "largeTextBox",
+								"placeholder": "example: *Build and test a gadget",
+								"title": "Activities",
+								"text-1": "What will you and any team members spend your time doing during your 6-month project? What will you make, create, or complete, and how will you test your solutions?",
+								"characterLength":2000,
+								"section": "Activities",
+								"mandatory": false,
+								"add-to": "section",
+								"parent" : "projectPlanSection",
+								"section-header": "Activities",
+								"comment": "<!--Think of your project as an experiment, and tell us how you'll carry it out. What will you and other participants spend your time doing? What you make, create, or complete by the end of the project? How will you test your solution to the problem you're aiming to solve?-->",
+							},
+						"projectBudgetSection": {
+								"type": "largeTextBox",
+								"placeholder": "example: *Project manager: 500 USD",
+								"title": "Budget breakdown",
+								"characterLength":2000,
+								"section": "Budget",
+								"text-1": "What kinds of funding do you need to accomplish your activities? Please breakdown each of your expenses into a list with bullet points.",
+								"mandatory": false,
+								"add-to": "section",
+								"parent" : "projectPlanSection",
+								"section-header": "Budget",
+								"comment": "<!--How you will use the funds you are requesting? List bullet points for each expense. Don’t forget to update your total amount in the Probox at the top of your page too if needed!-->",
+							},
+							"amountRequestedTextbox": {
+  							"type": "smallTextBox",
+  							"placeholder": "example: 800 USD",
+  							"title": "Total amount",
+                            "text-1": "How much total funding are you requesting for this grant? Don't forget to specify which currency you are using!",
+  							"characterLength":100,
+  							"mandatory": true,
+  							"add-to": "infobox",
+  							"infobox-param":"amount",
+  						},
+							"communityEngagementSection": {
+									"type": "largeTextBox",
+									"placeholder": "example: We'll survey our target community at the start and end of the project, and host 3 live feedback sessions in between.",
+									"title": "Community engagement plans",
+									"characterLength":2000,
+									"section": "Community engagement",
+									"mandatory": false,
+									"add-to": "section",
+									"parent" : "projectPlanSection",
+									"section-header": "Community engagement",
+									"text-1": "What are some ways you plan to incorporate community participation and feedback into each phase of your project?",
+									"comment": "<!--How will you engage the community you’re aiming to serve at various points during your project? Community input and participation helps make projects successful.-->",
+								},
+							"sustainabilitySection": {
+									"type": "largeTextBox",
+									"placeholder": "example: Kits we develop will be made available to the community for translation and global reuse.",
+									"title": "Sustainability",
+									"characterLength":2000,
+									"section": "Sustainability",
+									"mandatory": false,
+									"add-to": "section",
+									"parent" : "projectPlanSection",
+									"section-header": "Sustainability",
+									"text-1": "What do you expect will happen to your project after the grants ends? How might it be used/continued/grown?",
+									"comment": "<!--What do you expect will happen to your project after the grant ends? How might the project be continued or grown in new ways afterwards?-->",
+								},
+							"measuresOfSuccessSection": {
+									"type": "largeTextBox",
+									"placeholder": "example: *Improve editor activity and retention by 50% compared to the existing program",
+									"title": "Measures of success",
+									"characterLength":2000,
+									"section": "Measures of success",
+									"text-1": "How will you know if your project is successful and you've met your goals? List some ideas for specific, measurable targets.",
+									"mandatory": false,
+									"add-to": "section",
+									"parent" : "projectPlanSection",
+									"section-header": "Measures of success",
+									"value": "[[m:Grants:Learning_patterns/Achievable_goals#Set_realistic_targets|Need target-setting tips?]] Note: in addition to your project-specific measures of success, you will also be asked to report on some [[m:Grants:Learning_%26_Evaluation/Global_Metrics|Global Metrics]] at the end of your final report. Please keep this in mind as you plan, and we'll [[Grants:Learning_patterns/Calculating_global_metrics|support you]] as you begin your project.",
+									"comment": "<!--How will you know if the project is successful and you've met your goals? Please include specific, measurable targets here.-->",
+								},
+                    "nextButton":{
+  							"type":"nextButton",
+  							"title":"Next",
+  						},
+					"backButton":{
+  							"type":"backButton",
+  							"title":"Back",
+  						},
+  				},
+  				"step-4":{
+					"getInvolvedSection": {
+								"type": "largeTextBox",
+								"placeholder": "leave this blank!",
+								"title": "",
+								"characterLength":1000,
+								"section": "Get involved",
+								"mandatory": false,
+								"add-to": "section",
+								"visibility": "hidden",
+								"section-header": "Get involved",
+								"value": "",
+								"comment" :"<!--Leave this section blank -->",
+							},
+					"granteeUsernameTextbox": {
+							"type": "smallTextBox",
+							"placeholder": "example: Jmorgan (WMF)",
+							"title": "Grantee",
+							"text-1": "Please enter your username here. If your team has more than 1 grantee, you can add more people below.",
+							"characterLength":100,
+							"mandatory": false,
+							"add-to": "infobox",
+							"infobox-param":"grantee",
+						},
+					"contactEmailTextbox": {
+						"type": "smallTextBox",
+						"placeholder": "example: iegrants{{at}}wikimedia.org",
+						"title": "Primary contact",
+						"text-1": "Please provide an email address (or a username that can receive email) that we can use to contact you.",
+						"characterLength":100,
+						"mandatory": false,
+						"add-to": "infobox",
+						"infobox-param":"contact1",
+  						},						
   					"roleSelectionList":{
+  							"title": "Other participants", 
+  							"text-1": "Please indicate how many people (other than you) will be participating in your project as grantees or advisors.",
+                            "text-2": "If you're not sure yet, just skip this question. You can always add slots for more grantees and advisors later.",
+  							"type": "stepperList",
+  							"choiceList": [
+                                    {
+  										"key": "grantee",
+  										"value": 0,
+  									},
+  									{
+  										"key": "advisor",
+  										"value": 0,
+  									},
+  							],
+  							"hidden": [
+  									{
+  										"key": "translations",
+  										"value": "Probox/IEG/Content",
+  									},
+  									{
+  										"key": "idealab",
+  										"value": "YES",
+  									},
+  									{
+  										"key": "round",
+  										"value": "2014 round 2",
+  									},
+  									{
+  										"key": "year",
+  										"value": "2014",
+  									},
+  									{
+  										"key": "image",
+  										"value": "File:IEG_key_blue.png",
+  										"comment": "<!--if you want to customize the image, replace with another file name from Commons-->",
+  									},  									
+  									{
+  										"key": "status",
+  										"value": "DRAFT",
+  									},
+  							],
+  							"add-to": "infobox",
+  						},
+					"proboxPortal": {
+						"type": "smallTextBox",
+						"visibility": "hidden",
+						"add-to": "infobox",
+						"infobox-param": "portal",
+						"value": "IEG",
+						},  						
+					"participantsSection": {
+						"type": "largeTextBox",
+						"placeholder": "example: *PretendUserName - I have been organizing Wikiproject Fun for 3 years",
+						"title": "Participants",
+						"characterLength":1000,
+						"section": "Participants",
+						"text-1": "If your project team includes other grantees or advisors, please share their usernames here. For each member of your project team (including yourself), describe any relevant skills or background that you'll contribute to the project.",
+						"mandatory": false,
+						"add-to": "section",
+						"section-header": "Participants",
+						"parent" : "getInvolvedSection",
+						"value": "",
+						"comment": "<!--Please use this section to tell us more about who is working on this project. For each member of the team, please describe any project-related skills, experience, or other background you have that might help contribute to making this idea a success.-->",
+  						}, 
+				"moreParticipantsDropdown": {
+  							"type": "dropdownList",
+  							"title": "Volunteer participation",
+  							"placeholder": "select...",
+                            "text-1": "Would you like to add a way for more volunteers to easily join your project?",
+  							"characterLength":100,
+  							"mandatory": true,
+  							"add-to": "infobox",
+  							"infobox-param":"more_participants",
+  							"values": ["No","Yes",],
+  						},  						 						
+				   "communityNotificationSection": {
+						"type": "largeTextBox",
+						"placeholder": "leave this blank!",
+						"title": "",
+						"characterLength":1000,
+						"section": "Community notification",
+						"mandatory": false,
+						"add-to": "section",
+						"visibility": "hidden",
+						"section-header": "Community notification",
+						"parent" : "getInvolvedSection",
+						"value": "Please paste links below to where relevant communities have been notified of your proposal, and to any other relevant community discussions. [[m:Grants:Learning_patterns/Let_the_community_know|Need notification tips?]]",
+						"comment": "<!--You are responsible for notifying relevant communities of your proposal, so that they can help you! Depending on your project, notification may be most appropriate on a Village Pump, talk page, mailing list, etc.-->",
+  						},
+				   "endorsementsSection": {
+						"type": "largeTextBox",
+						"placeholder": "leave this blank!",
+						"title": "",
+						"characterLength":1000,
+						"section": "Endorsements",
+						"mandatory": false,
+						"add-to": "section",
+						"visibility": "hidden",
+						"section-header": "Endorsements",
+						"parent" : "getInvolvedSection",
+						"value": "Do you think this project should be selected for an Individual Engagement Grant? Please add your name and rationale for ''endorsing'' this project below! (Other constructive feedback is welcome on the discussion page).",
+						"comment": "<!-- Want to endorse this as a good idea? Add your name by clicking the button in the infobox, or edit this section directly. -->",
+  						},					
+                    "nextButton":{
+  							"type":"doneButton",
+  							"title":"									Create my proposal",
+  						},
+					"backButton":{
+  							"type":"backButton",
+  							"title":"									Back",
+  						},
+  				},
+		},
+			"expand":{
+				"config":{
+  					"post-edit": "Thank you for turning your idea into an Individual Engagement Grant proposal! Please feel free to continue editing your page to improve it over time, and watch the discussion page for more information.",
+  					"new-page": false,
+  					"namespace": "User",
+  					"portal-page": "Jmorgan_(WMF)",
+  					"page-template": "",
+  					"infobox": "Probox",
+  					"talkpage-template": "",
+                    "page-home": "User:Jmorgan_WMF/sandbox",
+                    "dialog-title": "<translate>
+Let's turn your Idea into an IEGrant proposal</translate>",
+                    "error-not-logged-in": "You are not logged in - please login to your account before continuing.",
+                    "edit-comment-prefix": "<translate>
+Created a </translate>",
+		    "edit-comment-suffix": "<translate>
+Using this tool</translate>"
+  			},
+  			"step-1":{
+                         "testdropdownling":{
+                                        "type": "dropdownList",
+                                        "title": "Testdropdown",
+                                        "placeholder": "Test Dropdown",
+                                        "add-to": "infobox",
+                                        "infobox-param": "test",
+                                        "values":["test1","test2","test3"]
+                                  },  	
+                          "testText":{
+                                      "type":"text",
+                                      "string": "<translate>
+This is a test, standalone text</translate>"
+                          },
+                         "projectGoalsSection": {
+  							"type": "largeTextBox",
+  							"placeholder": "leave this blank!",
+  							"title": "This is the 'project goals' section header",
+  							"characterLength":1000,
+                                                        "text-1":"This is to test if line spacing works or if it all overlaps & looks wierd.",
+                                        "text-2":"This is to test if line spacing works or if it all overlaps & looks wierd.",
+  							"mandatory": "false",
+  							"add-to": "section",
+  							"section-header": "IEG Goals",
+                            "value": "",
+                            "comment": "<!--In this section: briefly explain what are you trying to accomplish with this project, or what do you expect will change as a result of this idea.-->__TOC__"
+  						},
+  						 "portalIEG": {
+  						 	"type": "smallTextBox",
+  						 	"visibility": "hidden",
+  						 	"add-to": "infobox",
+  						 	"infobox-param": "portal",
+  						 	"value": "IEG"
+  						 },
+                    "testLink":{
+                                        "type": "link",
+                                        "href":"https://meta.wikimedia.org/wiki/Grants:IEG",
+                                        "link":"The IEG Page"
+                                                 },
+                    "roleSelectionList":{
   							"title": "<translate>
-<!--T:17-->
 Optional: Want your idea page to invite people with specific skills to join? Example: to ask for 2 researchers, select the number next to the researcher role below.</translate>",
                             "text-1": "<translate>
-<!--T:18-->
 If you're not sure yet, just skip this step for now.</translate>",
 							"url": "https://meta.wikimedia.org/wiki/Grants:IdeaLab/Roles",
 							"link": "Learn more about roles",
@@ -204,75 +476,40 @@ If you're not sure yet, just skip this step for now.</translate>",
   										"value": 0
   									},
   							],
-  							"hidden": [						
-  									{
-  										"key": "portal",
-  										"value": "Idealab"
-  									},
-  									{
-  										"key": "translations",
-  										"value": "Probox/Idealab/Content"
-  									},
-  									{
-  										"key": "more_participants",
-  										"value": "YES"
-  									}
-  							],
   							"add-to": "infobox",
   						},
-  					"hiddenPortal": {
-                            "type": "smallTextBox",
-                            "visibility": "hidden",
-                            "add-to": "infobox",
-                            "infobox-param": "more_participants",
-                            "value": "YES"
-					},
-					"hiddenMoreParticipats": {
-							"type": "smallTextBox",
-                            "visibility": "hidden",
-                            "add-to": "infobox",
-                            "infobox-param": "portal",
-                            "value": "IEG"
-					},
-					"hiddenTranslations":{
-							"type": "smallTextBox",
-	                        "visibility": "hidden",
-	                        "add-to": "infobox",
-	                        "infobox-param": "translations",
-	                        "value": "Probox/Idealab/Content"
-					},
+                    											  						
+                    "nextButton": {
+  							"type":"nextButton",
+  							"title":"Next"
+  						},
+  					"cancelButton":{
+  							"type": "cancelButton",
+  							"title":"Cancel"
+  						},
+  				},
+  				"step-2":{
   					"projectImage":{
   							"type": "image",
-  							"title": "<translate>
-<!--T:19-->
-Want a custom image to represent your project?</translate>",
-  							"imageTitleBox": "<translate>
-<!--T:20-->
-To use a different image from Wikimedia Commons, enter 'File:' followed by the filename below</translate>",
-                            "text-1": "<translate>
-<!--T:21-->
-This is the default image that will appear</translate>",
-                            "placeholder": "File:IdeaLab_beaker_and_flask.svg",
+  							"title": "Want a custom image to represent your project?",
+  							"imageTitleBox": "To use a different image from Wikimedia Commons, enter the filename below",
+                            "text-1": "This is the default image that will appear",
+                            "placeholder": "IdeaLab_beaker_and_flask.svg",
 							"url":"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/IdeaLab_beaker_and_flask.svg/200px-IdeaLab_beaker_and_flask.svg.png",
 							"add-to": "infobox",
 							"infobox-param": "image",
 							"validate": true,
-                            "link":"<translate>
-<!--T:22-->
-Search Wikimedia Commons for an image</translate>"
+                            "link":"Search Wikimedia Commons for an image"
   						},
                     "nextButton":{
   							"type":"doneButton",
-  							"title":"<translate>
-<!--T:23-->
-Create my idea</translate>"
+  							"title":"Create my idea"
   						},
 					"backButton":{
   							"type":"backButton",
-  							"title":"<translate>
-<!--T:24-->
-Back</translate>"
+  							"title":"Back"
   						},
   				} 
-					
+
+			}			
   	};

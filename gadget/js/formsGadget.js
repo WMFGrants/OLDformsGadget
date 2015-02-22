@@ -9,23 +9,34 @@
  * "Forms" feature, to be used by the Wikimedia Foundation's Grants Programme
  */
 //<nowiki>
-importStylesheet('MediaWiki:Gadget-formWizard.css');
+importStylesheet('User:Jeph_paul/formsGadget.css');
 var formsGadget = {
 	'that' : this,
 	'createDialog' : function(){
 		var that = this;
-		this.dialog = $('<div id="formsDialog"></div>').dialog({
+		var dialogDict = {
 							dialogClass: 'formsGadget',
 							autoOpen: false,
-							title: that.formDict.config['dialog-title'],
+							//title: that.formDict.config['dialog-title'],
 							width: '495px',
 							modal: true,
 							closeOnEscape: true,
 							resizable: false,
 							draggable: false,
-						});	
+					};
+		if($('#formsDialogExpand').length){
+			this.dialog = $('#formsDialogExpand').dialog(dialogDict);
+		}
+		else{
+			this.dialog = $('<div id="formsDialogExpand"></div>').dialog(dialogDict);
+		}
+		$('#formsDialogExpand').append('<div class="loading"></div>');
+			
 	},
 	'dialog' : null,
+	'openPanel': function(){
+		this.dialog.dialog('open');
+	},
 	'openDialog' : function () {
 		if (this.dialog === null){
 			this.createDialog();
@@ -34,18 +45,20 @@ var formsGadget = {
 			this.dialog.dialog('open');
 		}
 	},
+	'cleanupDialog': function (){
+		if (this.dialog){
+			this.dialog.dialog('destroy');	
+		}
+		this.dialog = null;
+		$('#formsDialogExpand').html('');
+	},
 	'utilities' : {
-		'configPath' : 'Meta:FormWizard/Config',
+		'configPath' : 'User:Jeph_paul/formsGadgetConfigBoth',
+		'getPageTitle': function(){
+			return true;
+		},
 		'grantType' : function(){
 			var grant = mw.config.get('wgTitle').split('/')[0].replace(/ /g,'_');
-			/*
-			if (grant in config){
-				return config[grant];
-			}
-			else{
-				return config['default'];
-			}
-			*/
 			return grant;
 		},
 		/*
@@ -85,17 +98,18 @@ var formsGadget = {
 			}
 			return dict;
 		},
-		'setPostEditFeedbackCookie' : function(value){
-			$.cookie(value,true,{'path':'/'});
+		'setPostEditFeedbackCookie' : function(key,value){
+			$.cookie(key, value, {'path':'/'});
 		},
 		/*
 		 * This function is used to check if a has been set by the above function 
 		 * to show the speech bubble on page reload
 		 */
-		'checkPostEditFeedbackCookie' : function(value){
-			if($.cookie(value)){
-				$.cookie(value,null,{'path':'/'});
-				return true;
+		'checkPostEditFeedbackCookie' : function(key){
+			var value = $.cookie(key);
+			if(value){
+				$.cookie(key, null, {'path':'/'});
+				return value;
 			}
 			else{
 				return false;
@@ -111,6 +125,7 @@ var formsGadget = {
 		 * Radio button list
 		 * Stepper list
 		 * Image/s
+		 * Dropdown
 		 */
 		'hiddenInfoboxFields' : [],
 		'found' : false,
@@ -178,7 +193,7 @@ var formsGadget = {
 					
 				});
 		},
-		'inputList': function(type,list,title,dict){
+		'inputList': function(type,list,title,dict,role){
 		 	var div = this.elementContainer();
 			div = this.addText(div,title,'title');
 			this.addDescription(dict,div);
@@ -194,6 +209,9 @@ var formsGadget = {
 				}
 				checkbox.value = value;
 				checkbox.setAttribute('data-add-to',dict['add-to']);
+				if(role){
+					checkbox.setAttribute('data-role',true);
+				}
 				checkbox.className = 'inputListItem';
 				
 				checkbox.setAttribute('data-add-to-attribute',key);
@@ -203,7 +221,7 @@ var formsGadget = {
 				description.className = 'inputListItemDescription';
 				description.textContent = descriptionText;
 				label.appendChild(checkbox);
-				label.appendChild(description);		
+				label.appendChild(description);
 				div.appendChild(label);
 			}
 			return div;
@@ -212,7 +230,6 @@ var formsGadget = {
 			var config = {};
 			for (key in defaultConfig){
 				actualConfig[key] = key in actualConfig? actualConfig[key] : defaultConfig[key];
-				//remove/Cleanup
 				if (key == 'mandatory' && (typeof(actualConfig[key]) == 'string')){
 					if (actualConfig[key] == 'true'){
 						actualConfig[key] = true;
@@ -237,17 +254,11 @@ var formsGadget = {
 	 		else{
 	 			var input = document.createElement('input');
 	 		}
-	 		//var api = new mw.Api();
 	 		//cleanup
 	 		if(dict['visibility'] == 'hidden'){
 	 			div.style['display'] = 'none';
 	 			input.value = dict['value'];
 	 		}
-	 		/*
-	 		if ('value' in dict){
-	 			
-	 		}
-	 		*/
 	 		//Cleanup
 	 		if('page-title' in dict){
 	 			input.setAttribute('page-title',true);
@@ -272,7 +283,7 @@ var formsGadget = {
 	 			var inputTextBox = this;
 	 			var enteredString = $(this).val();
 	 			if(!enteredString && !dict['mandatory']){
-	 				$('#formsDialog [elemType="button"]').trigger('enableButtons');
+	 				$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
 	 				$(inputTextBox).parent().removeClass('entrySatisfying entryNotSatisfying');
 	 				that.timestamp = Date.now();
 	 				that.found = true;
@@ -289,7 +300,7 @@ var formsGadget = {
 		 					$(inputTextBox).parent().removeClass('entrySatisfying entryNotSatisfying');
 		 					$(inputTextBox).parent().addClass(that.found ? 'entrySatisfying' : 'entryNotSatisfying');
 		 					if (that.found){
-		 						$('#formsDialog [elemType="button"]').trigger('enableButtons');
+		 						$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
 			 					if(typeof(callback) === 'function' && that.found){
 			 						var apiUrl = 'https://meta.wikimedia.org/w/api.php?callback=?';
 			 						$.getJSON(apiUrl,{'action':'parse',
@@ -305,7 +316,7 @@ var formsGadget = {
 			 					}
 		 					}
 		 					else{
-		 						$('#formsDialog [elemType="button"]').trigger('disableButtons');
+		 						$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
 		 					} 
 		 				});
 	 				}	
@@ -313,23 +324,9 @@ var formsGadget = {
 	 			//Cleanup & trigger event for limit reached
 	 			$(this).removeClass('mandatoryClass');
 	 			if ($(this).val().length > config['characterLength']){
-	 				//$('#formsDialog [elemType="button"]').trigger('disableButtons');
 	 				$(this).val($(this).val().substring(0,config['characterLength']));
 	 			}
-	 			/*
-	 			else{
-	 				var flag = 0;
-	 				$('#formsDialog [type="textbox"]').each(function(){
-	 					var elem = $(this);
-	 					if (elem.val().length > elem.attr('data-character-length')){
-	 						flag++;
-	 					}
-	 				});
-	 				if(!flag){
-	 					//$('#formsDialog [elemType="button"]').trigger('enableButtons');
-	 				}
-	 			}
-	 			*/
+
 	 		});
 	 		//To show validation
 	 		
@@ -343,10 +340,7 @@ var formsGadget = {
 	 			}
 	 			inputElementWrapper.appendChild(input);
 	 			div.appendChild(inputElementWrapper);
-	 		
-	 		
-	 		//this.addText(div,config['error-messageLength'],'error');
-	 		
+	 			
 			return div;
 		},
 		'smallTextBox': function (dict,callback,element) {
@@ -391,7 +385,37 @@ var formsGadget = {
 			if(!('max' in dict)){
 				dict['max'] = 9;
 			}
-			return this.inputList('number',list,dict['title'],dict);
+			return this.inputList('number',list,dict['title'],dict,true);
+		},
+		'dropdownList': function(dict){
+			var div = this.elementContainer();
+			div = this.addText(div,dict['title'],'title');
+			this.addDescription(dict,div);
+			var values = dict['values'];
+			var select = document.createElement('select');
+			select.setAttribute('type','textbox');
+	 		select.setAttribute('class','dropdown');
+	 		select.setAttribute('data-placeholder',dict['placeholder']);
+	 		select.setAttribute('data-add-to',dict['add-to']);
+	 		select.setAttribute('data-add-to-attribute',dict['infobox-param']);
+			var option;
+			for (elem in values){
+				/*
+				option = document.createElement('option');
+				option.value = values[elem];
+				option.innerText = values[elem];
+				select.appendChild(option);
+				*/
+				option = $('<option>').attr('value',values[elem]).html(values[elem]);
+				select.appendChild(option[0]);
+			}
+			/*
+			$('.formsGadget .dropdown').chosen({
+								disable_search: true,
+								width: '50%',
+							})*/
+			div.appendChild(select);
+			return div;
 		},
 		'dropdownList': function(dict){
 			var div = this.elementContainer();
@@ -439,7 +463,6 @@ var formsGadget = {
 	  		dict['validate'] = 'exists';
 	  		//cleanup
 	  		dict['placeholder'] = 'placeholder' in dict ? dict['placeholder'] : 'File:Test.png';
-	  		//dict['value'] = url;
 			var div = this.elementContainer();
 			this.addText(div,dict['title'],'title');
 			this.addDescription(dict,div);
@@ -453,7 +476,6 @@ var formsGadget = {
 			},img);
 			var description = document.createTextNode(text);
 			div.appendChild(img);
-			//div.appendChild(description);
 			div.appendChild(textbox);
 			var commonsLink = this.link(dict);
 			div.appendChild(commonsLink);
@@ -463,7 +485,6 @@ var formsGadget = {
 			var a = document.createElement('input');
 			a.type='submit';
 			a.setAttribute('elemType','button');
-			//a.href = '#';
 			if(type == 'cancel' || type == 'back'){
 				a.className = 'mw-ui-button cancel mw-ui-quiet';
 			}
@@ -498,8 +519,8 @@ var formsGadget = {
 			var button = this.button('next',dict['title']);
 			var that = this;
 			button.onclick = function(){
-				$('#formsDialog [step]').hide();
-				$('#'+ dict['step']).next().show();
+				$('#formsDialogExpand [step]').hide();
+				$('#formsDialogExpand'+' #'+dict['step']).next().show();
 			};
 			return button;
 		},
@@ -507,15 +528,15 @@ var formsGadget = {
 			var button = this.button('back',dict['title']);
 			var that = this;
 			button.onclick = function(){
-				$('#formsDialog [step]').hide();
-				$('#'+dict['step']).prev().show();
+				$('#formsDialogExpand [step]').hide();
+				$('#formsDialogExpand'+' #'+dict['step']).prev().show();
 			};
 			return button;
 		},
 		'validateForm': function(){
 			var counter = 0;
 			var firstElem;
-			$('[data-mandatory="true"]').each(function(){
+			$('#formsDialogExpand [data-mandatory="true"]').each(function(){
 				var elem = $(this);
 				if(!elem.val()){
 					if (counter == 0){
@@ -527,7 +548,7 @@ var formsGadget = {
 			});
 			//Add mandatory filed Event & styling
 			if(firstElem){
-				$('#formsDialog [step]').hide();
+				$('#formsDialogExpand [step]').hide();
 				while(true){
 					if (firstElem.attr('step')){
 						firstElem.show();
@@ -537,13 +558,217 @@ var formsGadget = {
 				}
 			}
 			else{
-				this.createWikiPage();
+				if (formsGadget.type == 'create'){
+					this.createWikiPage();
+				}
+				else{
+					this.modifyWikiPage();
+				}
 			}
 		},
+		'infoboxString': '',
+		'remainingSectionString': '',
+		'extractInfobox' : function(markup){
+			var startIndex = markup.indexOf('{{Probox');
+			var counter = 0;
+			var endIndex = 0;
+			for (i=startIndex;i<markup.length;i++){ 
+				if(markup[i] == '}' && markup[i+1] == '}'){ 
+						counter++;
+				} 
+				if(markup[i] == '{' && markup[i+1] == '{'){
+					counter--;
+				} 
+				if(counter == 0){
+					var endIndex = i+2; 
+					break;
+				}
+			}
+			if (counter != 0){
+				return '';
+			}
+			var infobox = { 
+				'infobox' : markup.slice(startIndex,endIndex),
+			    'before' : markup.slice(0,startIndex),
+				'after' : markup.slice(endIndex),
+			};
+			//return markup.slice(startIndex,endIndex);
+			return infobox;
+		},
+		'infoboxObjectify': function(infoboxString){
+			var paramRe = /( )*\|( )*[A-Za-z0-9_]+( )*=/gi;
+			//this.extractInfoboxString(wikitext);
+			var units = infoboxString.split('\n');
+			var infobox = [];
+			var infoboxParams = {};
+			var parts,line,param,value;
+			for (unit in units){
+				line = units[unit];
+				if(line.search(paramRe) != -1){
+					parts = line.split('=');
+					param = $.trim(parts[0].replace('|',''));
+					value = $.trim(parts[1]);
+					//infoboxParams[param] = value;
+					infobox.push({'param': param, 'value': value});
+				}
+				else{
+					infobox.push($.trim(line));
+				}
+			}
+			return infobox;
+		},
+		'modifyInfoboxParam': function(infobox,param,newValue){
+			var flag = true;
+			for (elem in infobox){
+				if(typeof(infobox[elem]) == 'object' && infobox[elem]['param'] == param){
+					infobox[elem]['value'] = newValue;
+					flag = false;
+				}
+			}
+			if (flag){
+				infobox.splice(-1,0,{'param':param, 'value':newValue});
+			}
+			return infobox;
+		},
+		'stringifyInfobox' : function(infobox){
+			var infoboxString = '';
+			for (elem in infobox){
+				if (typeof(infobox[elem]) == 'object'){
+					if(infobox[elem]['value']){
+						infoboxString = infoboxString + '|' + infobox[elem]['param'] + '=' + infobox[elem]['value'] + '\n';
+					}
+					else{
+						infoboxString = infoboxString + '|' + infobox[elem]['param'] + '=' + '\n';
+					}
+				}
+				else{
+					infoboxString = infoboxString + infobox[elem] +'\n';
+				}
+			}
+			return infoboxString;
+		},
+		'createEditSummary' : function(title,subcomment){
+			var summary = '';
+			var formsConfig = formsGadget.formDict['config'];
+			if (formsConfig['edit-comment-prefix']){
+				summary = formsConfig['edit-comment-prefix'] + ' '; 
+			}
+			else{
+				summary = formsConfig['edit-comment-default'] + ' ';
+			}
+			if(subcomment){
+				summary = summary + title + ' (' + subcomment + ') ';
+			}
+			else{
+				summary = summary + title + ' ';
+			}
+			if (formsConfig['edit-comment-suffix']){
+				summary = summary + formsConfig['edit-comment-suffix'];
+			}
+			return summary;
+		},
+		'modifyWikiPage' : function(){
+			var that = this;
+			var infobox = '';
+			var infoboxString = '';
+			var sections = '';
+			var api = new mw.Api();
+			
+			var roots = this.wikiSectionTree.roots;
+			
+			for (elem in roots){
+				console.log('---------');
+				this.wikiSectionTree.traverse([roots[elem]],1,function(id){
+					var elem = $('#formsDialogExpand #'+id);
+					value = elem.val() ? elem.val() : '';
+					var heading = elem.attr('data-add-to-attribute');
+					return { 'heading': heading, 'value': value};
+				});
+			}
+			//Disabling buttons on ajax post 
+			$('#formsDialogExpand [elemType="button"]').trigger('disableButtons');
+			
+			//should not hard code '/Toolkit'
+			var title = mw.config.get('wgPageName').replace('/Toolkit','');
+			//Getting the infobox
+			var gettingInfobox = api.get({
+						'format':'json',
+						'action':'parse',
+						'prop':'wikitext',
+						'page': title,
+						'section': 0
+					}).then(function(result){
+						var elements = that.extractInfobox(result.parse.wikitext['*']);
+						var infobox = that.infoboxObjectify(elements['infobox']);
+						var before = elements['before'];
+						var after = elements['after'];
+						$('#formsDialogExpand [data-add-to]').each(function(index,elem){
+							var elem = $(elem);
+							if(elem.attr('data-add-to') == 'infobox' ){
+								if(elem.attr('type') == 'checkbox'){
+									if (elem.is(':checked')){
+										infobox = that.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute'),elem.val());
+									}
+									else{
+										infobox = that.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute'),null);
+									}
+								}
+								else if(elem.attr('data-role')){
+									for (var i=0;i<elem.val(); i++){
+										infobox = that.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute')+(i+1), null);
+									}
+								}
+								else{
+									infobox = that.modifyInfoboxParam(infobox,elem.attr('data-add-to-attribute'),elem.val());
+								}
+							}
+						});
+						/*
+						* infobox entries
+						*/
+						var hiddenFields = that.hiddenInfoboxFields;
+						for(entry in hiddenFields){
+							infobox = infobox.push({'param':hiddenFields[entry]['key'],'value':hiddenFields[entry]['value']});
+						}
+						modifiedSection = before + $.trim(that.stringifyInfobox(infobox)) + after;
+						var formsConfig = formsGadget.formDict['config'];
+						api.post({
+							'action' : 'edit',
+							'title' : title,
+							'text' : modifiedSection,
+							'summary' : that.createEditSummary(title,'editing infobox parameters'),
+							'section': 0,
+							'watchlist':'watch',
+							'token' : mw.user.tokens.values.editToken
+						}).then(function(){
+							var newSections = '\n' + that.wikiSectionTree.sections;
+							api.post({
+								'action' : 'edit',
+								'title' : title,
+								//'text' : sections,
+								'summary' : that.createEditSummary(title,'editing section'),
+								'appendtext':newSections,
+								'watchlist':'watch',
+								'token' : mw.user.tokens.values.editToken
+							}).then(function(){
+								// Redirecting to idea page
+								console.log('Successfully Added new sections & modified the infobox');
+								//Cleanup
+								formsGadget.dialog.dialog('close');
+								formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify','expand');
+								window.location.href = location.origin + '/wiki/' + title;
+							});
+						});
+					});
+			$.when(gettingInfobox).then(function(){
+			});	
+		},
 		'createWikiPage' :  function(){
+			var that = this;
 			var infobox = '';
 			var page = '';
 			var api = new mw.Api();
+
 			var pageTitle = $.trim($('#formsDialog [page-title]').val());
 			
 			var roots = this.wikiSectionTree.roots;
@@ -551,7 +776,7 @@ var formsGadget = {
 			for (elem in roots){
 				console.log('---------');
 				this.wikiSectionTree.traverse([roots[elem]],1,function(id){
-					var elem = $('#formsDialog #'+id);
+					var elem = $('#formsDialogExpand #'+id);
 					value = elem.val() ? elem.val() : '';
 					var heading = elem.attr('data-add-to-attribute');
 					var comment = elem.attr('data-comment');
@@ -559,7 +784,7 @@ var formsGadget = {
 				});
 			}
 			
-			$('#formsDialog [data-add-to]').each(function(index,elem){
+			$('#formsDialogExpand [data-add-to]').each(function(index,elem){
 				var elem = $(elem);
 				if(elem.attr('data-add-to') == 'section' ){
 					//var value = elem.val() ? elem.val() : '';
@@ -568,13 +793,13 @@ var formsGadget = {
 				}
 				else{
 					//Cleanup & Simplify
-					if (elem.attr('type') == 'number'){
+					if (elem.attr('data-role')){
 						for (var i=0;i<elem.val(); i++){
 							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + (i+1) + '=\n';
 						}	
 					}
 					else if(elem.attr('type') == 'checkbox'){
-						if (elem.attr('checked')){
+						if (elem.is(':checked')){
 							infobox = infobox + '|'+ elem.attr('data-add-to-attribute') + '=' + elem.val() + '\n';
 						}
 						else{
@@ -599,9 +824,11 @@ var formsGadget = {
 				infobox = infobox + '|' + hiddenFields[entry]['key'] + '=' + hiddenFields[entry]['value'] + '\n';
 			}
 			//Hardcoding creator/timestamp
+
 			infobox = infobox + '|' + 'timestamp = ~~~~~' + '\n' ;
 			infobox = infobox + '|' + 'creator = ' + mw.user.getName() + '\n' ;
 			//infobox = infobox.join('');
+
 			var probox = this.formDict.config['infobox'] ? this.formDict.config['infobox'] : 'Probox/Idealab';
 			infobox = '{{' + probox + '\n' + infobox + '}} \n';
 			page = infobox + this.wikiSectionTree.sections;
@@ -612,27 +839,16 @@ var formsGadget = {
 			 */
 			
 			var title = formsGadget.formDict['config']['page-home'] + pageTitle;
+
 			//Disabling buttons on ajox post 
 			$('#formsDialog [elemType="button"]').trigger('disableButtons');
 			
-			var summary = '';
-			var formsConfig = formsGadget.formDict['config'];
-			if (formsConfig['edit-comment-prefix']){
-				summary = formsConfig['edit-comment-prefix'] + ' '; 
-			}
-			else{
-				summary = ' Creating the idea ';
-			}
-			summary = summary + title + ' ';
-			if (formsConfig['edit-comment-suffix']){
-				summary = summary + formsConfig['edit-comment-suffix'];
-			}
 			
 			api.post({
 						'action': 'edit',
 						//Cleanup
 						'title': title,
-						'summary': summary,
+						'summary': that.createEditSummary(title),
 						'text': page,
 						'watchlist':'watch',
 						token: mw.user.tokens.get('editToken')
@@ -640,19 +856,11 @@ var formsGadget = {
 						//Creating Idea Toolkit
 						var formsConfig = formsGadget.formDict['config'];
 						var toolkit = formsConfig['toolkit-name'];
-						var toolkitContent = '{{' + formsGadget.formDict['config']['toolkit-template'] + '}}';
+						var toolkitContent = '{{' + formsConfig['toolkit-template'] + '}}';
 						var createToolkit = true;
 						if (toolkit && toolkitContent){
 							var toolkitTitle = title + '/' + toolkit;
-							var summary = '';
-							if (formsConfig['edit-comment-prefix']){
-								summary = formsConfig['edit-comment-prefix'] + ' ';
-							}
-							summary = summary + title;
-							if (formsConfig['edit-comment-suffix']){
-								summary = summary + formsConfig['edit-comment-suffix'] + ' ';
-							}
-							
+							var summary = 'Adding the toolkit for ' + title;
 							createToolkit = api.post({
 								'action': 'edit',
 								//Cleanup
@@ -669,13 +877,13 @@ var formsGadget = {
 						//Cleanup
 						$.when(createToolkit).then(function(){
 							formsGadget.dialog.dialog('close');
-							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetPageCreated');
+							formsGadget.utilities.setPostEditFeedbackCookie('formsGadgetNotify','create');
 							window.location.href = location.origin + '/wiki/' + title;
 						},function(){
-							$('#formsDialog [elemType="button"]').trigger('enableButtons');
+							$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
 						});
 					},function(){
-						$('#formsDialog [elemType="button"]').trigger('enableButtons');
+						$('#formsDialogExpand [elemType="button"]').trigger('enableButtons');
 					});
 			
 			console.log(title,page);
@@ -731,6 +939,7 @@ var formsGadget = {
 				dialogInternal.appendChild(panel);
 			}
 		}
+
 		$('#formsDialog').append(dialogInternal);
 		$('.formsGadget .dropdown').chosen({
 								disable_search: true,
@@ -738,7 +947,6 @@ var formsGadget = {
 						});
 		return true;
 	},
-	//'wikiSectionTree' : new this.tree(),
 	'tree' : function(){
 		var rootList = {};
 		var nodeList = {};
@@ -807,7 +1015,8 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 	$(function() {
 		(function(){
 			var namespace = mw.config.get('wgCanonicalNamespace');
-			if (  namespace == "Grants" ){
+			var formsGadgetType = $('.wp-formsGadget-create').length || $('.wp-formsGadget-button').length ? 'create' : ( $('.wp-formsGadget-expand').length ? 'expand' : 0 );
+			if ( namespace == 'Grants' || namespace == 'User' ){
 				if(mw.config.get('wgPageContentLanguage') == 'en'){
 					var api = new mw.Api();
 					var utility = formsGadget.utilities;
@@ -827,21 +1036,112 @@ mw.loader.using( ['jquery.ui.dialog', 'mediawiki.api', 'mediawiki.ui','jquery.ch
 							formsGadget['formDict'] = config;
 							//Cleanup
 							formsGadget['wikiSectionTree'] = new formsGadget.tree();
+					//Cleanup
+					if (formsGadgetType == 'expand'){
+						//Temporarily showing button for testing
+						$('.wp-formsGadget-expand').show();
+						$('.wp-formsGadget-' + formsGadgetType).click(function(e){
+							e.preventDefault();
+							formsGadget.cleanupDialog();
 							formsGadget.openDialog();
-							formsGadget.createForm(config);
-							if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetPageCreated')){
-								//Show post edi message
-								mw.notify(config['config']['post-edit'],{autoHide:false});
+							formsGadget.openPanel();
+							
+							$('#formsDialogExpand .loading').show();
+							
+							var grantType = $(this).attr('data-grantType');
+							
+							var configFullPath = utility.configPath+'/'+grantType+'/'+utility.contentLanguage();
+							
+							api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
+								for (id in data.query.pages){
+										if (id == -1){
+											configFullPath = utility.configPath+'/'+grantType+'/en';
+										}
+								}
+								var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
+										//Get the config for the detected language
+								$.when(jQuery.getScript(configUrl)).then(function(){
+									var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetType]);
+									formsGadget['formDict'] = config;
+									//Cleanup
+									$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
+									formsGadget['wikiSectionTree'] = new formsGadget.tree();
+									formsGadget.openDialog();
+									formsGadget.createForm(config);
+									formsGadget.type = formsGadgetType;
+									formsGadget.openDialog();
+									$('#formsDialogExpand .loading').hide();
+									
+									if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
+										//Show post edi message
+										//Clean up & modify
+										var editType = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+										var editNotification = utility.stripWhiteSpace(formsGadgetConfig[editType]['config']['post-edit']);
+										mw.notify(editNotification,{autoHide:false});
+									}
+								});
+							});									
+						});	
+					}
+					else{
+						var grantType = utility.grantType();
+						var configFullPath = utility.configPath+'/'+grantType+'/'+utility.userLanguage();
+						
+						api.get({'action':'query','titles':configFullPath,'format':'json'}).then(function(data){	
+							for (id in data.query.pages){
+									if (id == -1){
+										configFullPath = utility.configPath+'/'+grantType+'/en';
+									}
 							}
-							$('.wp-formsGadget-button').click(function(e){
-															e.preventDefault();
-															formsGadget.openDialog();
-														});
+							var configUrl = 'https://meta.wikimedia.org/w/index.php?title='+configFullPath+'&action=raw&ctype=text/javascript&smaxage=21600&maxage=86400';
+									//Get the config for the detected language
+									
+							//Adding the loading for the dialog
+							
+															
+							$.when(jQuery.getScript(configUrl)).then(function(){
+								if(!(formsGadgetType in formsGadgetConfig)){
+									config = utility.stripWhiteSpace(formsGadgetConfig['create']);
+									//$('#formsDialogExpand .loading').hide();
+									if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
+										//Show post edi message
+										mw.notify(config['config']['post-edit'],{autoHide:false});
+									}
+									return;
+								}
+								
+								var config = utility.stripWhiteSpace(formsGadgetConfig[formsGadgetType]);
+								//$('#formsDialogExpand .loading').hide();
+								formsGadget['formDict'] = config;
+								//Dialog Title
+								$('.formsGadget .ui-dialog-title').html(config.config['dialog-title']);
+								//Cleanup
+								formsGadget['wikiSectionTree'] = new formsGadget.tree();
+								formsGadget.openDialog();
+								$('#formsDialogExpand .loading').hide();
+								formsGadget.createForm(config);
+								formsGadget.type = formsGadgetType;
+								if(formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify')){
+									//Show post edi message
+									//Show post edi message
+									//Clean up & modify
+									var editType = formsGadget.utilities.checkPostEditFeedbackCookie('formsGadgetNotify');
+									var editNotification = utility.stripWhiteSpace(formsGadgetConfig[editType]['config']['post-edit']);
+									mw.notify(editNotification,{autoHide:false});
+								}
+								//Temp
+								$('.wp-formsGadget-button' ).click(function(e){
+																e.preventDefault();
+																formsGadget.openDialog();
+															});
+								
+							});
 						});
-					});
+					}
 				}
 				else{
-					$('.wp-formsGadget-button').hide();
+
+					$('.wp-formsGadget-' + formsGadgetType).hide();
 				}	
 			}
 		})();

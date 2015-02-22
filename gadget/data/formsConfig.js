@@ -25,6 +25,20 @@
   							'validate': 'doesNotExists',
   							'page-title':true
   						},
+  					'projectChangeValuesDropdown': {
+  							'type': 'dropdownList',
+  							'placeholder': 'Select a status',
+  							'title': 'Move it to the appropriate Status',
+  							'add-to': 'infobox',
+  							'infobox-param': 'status',
+  							'values':[
+  										'withdrawn',
+  										'active',
+  										'postponed',
+  										'something'
+  									]
+  						
+  					},
   					'projectSummaryTextbox': {
   							'type': 'largeTextBox',
   							'placeholder': 'Click here to add summary',
